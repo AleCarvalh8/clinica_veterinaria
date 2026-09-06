@@ -27,7 +27,7 @@ erDiagram
 | Id_Usuario | INT | PK | Identificador do operador no sistema |
 | Nome | VARCHAR(120) | NOT NULL | Nome completo |
 | Email | VARCHAR(50) | NOT NULL | Login coorporativo |
-| Senha | VARCHAR(255) | NOT NULL |  |
+| Senha | VARCHAR(50) | NOT NULL |  |
 | Perfil | VARCHAR(11) | NOT NULL, CHECK IN | Recepção/Veterinário |
 
 ### Tabela: Veterinário
@@ -36,14 +36,14 @@ erDiagram
 | CRMV | VARCHAR(7) | PK |  |
 | CNPJ | VARCHAR(18) | NOT NULL | PJ |
 | Especialidade | VARCHAR(80) | NOT NULL |  |
-| Id | INT | FK -> Usuario.Id_Usuario, NOT NULL, UNIQUE |  |
+| Id_Usuario | INT | FK -> Usuario.Id_Usuario, NOT NULL, UNIQUE |  |
 
 ### Tabela: Recepção
 | Campo | Tipo | Restrições | Descrição |
 |---|---|---|---|
 | Matrícula | INT | PK | Número de matrícula CLT na empresa |
 | CPF_Recepcao | VARCHAR(14) | NOT NULL |  |
-| Id | INT | FK -> Usuario.Id_Usuario, NOT NULL, UNIQUE |  |
+| Id_Usuario | INT | FK -> Usuario.Id_Usuario, NOT NULL, UNIQUE |  |
 
 ### Tabela: Tutor
 | Campo | Tipo | Restrições | Descrição |
@@ -51,7 +51,7 @@ erDiagram
 | Id_Tutor | INT | PK |  |
 | Nome | VARCHAR(120) | NOT NULL | Nome completo |
 | CPF_Tutor | VARCHAR(14) | NOT NULL, UNIQUE |  |
-| Email | VARCHAR(160) |  |  | 
+| Email | VARCHAR(50) |  |  | 
 | Telefone | VARCHAR(20) |  |  |
 | Observações | TEXT |  |  |
 
@@ -62,7 +62,7 @@ erDiagram
 | Id_Tutor | INT | FK -> Tutor.Id_Tutor, NOT NULL |  |
 | Nome | VARCHAR(30) |  |  |
 | Tipo_animal | VARCHAR(15) | NOT NULL | Cão, gato, ave, etc | 
-| Raça | VARCHAR(35) | | Raça ou SRD (Sem raça definida) |
+| Raça | VARCHAR(35) | NOT NULL | Raça ou SRD (Sem raça definida) |
 | Sexo | CHAR(1) | CHECK IN('M','F') |  | 
 | Data_nascimento | DATE | | |  |  
 
@@ -70,9 +70,9 @@ erDiagram
 | Campo | Tipo | Restrições | Descrição |
 |---|---|---|---|
 | Id_Prontuario | INT | PK |  |
-| Id_Veterinario | INT | FK -> Veterinario.Id_Veterinario |  |
-| Id_Tutor | INT | FK -> Tutor.Id_Tutor, NOT NULL, UNIQUE |  |
-| Id_Animal | INT | FK -> Animal.Id_Aniaml, NOT NULL, UNIQUE |  |
+| Id_Veterinario | INT | FK -> Veterinario.Id_Veterinario, NOT NULL, UNIQUE |  |
+| Id_Tutor | INT | FK -> Tutor.Id_Tutor, NOT NULL |  |
+| Id_Animal | INT | FK -> Animal.Id_Aniaml, NOT NULL |  |
 | Data_abertura | TIMESTAMP | NOT NULL, DEFAULT NOW () | Registro de abertura da ficha clinica |
 | Peso_atual | NUMERIC(5,2) | NOT NULL, CHECK (peso_atual > 0) |  |
 | Queixa | TEXT | NOT NULL |  |
@@ -111,10 +111,21 @@ erDiagram
 | Campo | Tipo | Restrições | Descrição |
 |---|---|---|---|
 | Id_Internação | INT | PK |  |
-| Id_Animal | INT | FK -> Animal.Id_Animal | Caso cadastrado |
+| Id_Animal | INT | FK -> Animal.Id_Animal, NOT NULL |  |
 | Id_Veterinario | INT | FK -> Veterinario.Id_Veterinario, NOT NULL | Médico responsável pelo caso |
-| Data_entrada | TIMESTAMP | NOT NULL, DEFAULT NOW () |  |
-| Data_alta | TIMESTAMP | CHECK (data_alta > data_entrada) |  |
-| Nivel_gravidade | VARCHAR(10) | NOT NULL, CHECK IN ('Baixa','Media','Alta','Critica') |  |
-| Status | VARCHAR(10) | NOT NULL, DEFAULT 'Internado', CHECK IN ('Internado','Alta','Obito') |  |
-| Evolucao_plantao | TEXT | | Anotações da equipe de plantão |
+| Data_Internacao | TIMESTAMP | NOT NULL, DEFAULT NOW () |  |
+| Data_Alta | TIMESTAMP | CHECK (Data_Alta > Data_Internacao) |  |
+| Nivel_Gravidade | VARCHAR(10) | NOT NULL, CHECK IN ('Baixa','Media','Alta','Critica') |  |
+| Status_Internacao | VARCHAR(10) | NOT NULL, DEFAULT 'Internado', CHECK IN ('Internado','Alta','Obito') |  |
+| Evolucao_Internacao | TEXT |  | Anotações |
+
+### Tabela: Plantao
+| Campo | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| Id_Plantao | INT | PK |  |
+| Id_Animal | INT | FK -> Animal.Id_Animal | Caso cadastrado |
+| Id_Tutor | INT | FK -> Tutor.Id_Tutor | Caso cadastrado |
+| Id_Veterinario | INT | FK -> Veterinario.Id_Veterinario, NOT NULL |  |
+| Chegada_Plantao | TIMESTAMP | NOT NULL, DEFAULT NOW () |  |
+| Status_Plantao | VARCHAR(10) | NOT NULL, DEFAULT 'Em análise', CHECK IN ('Em análise', 'Internado','Alta','Obito') |  |
+| Evolucao_Plantao | TEXT |  | Anotações | 
