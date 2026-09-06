@@ -88,7 +88,7 @@ erDiagram
 | Id_Animal | INT | PK, FK -> Animal.Id_Animal, NOT NULL | Paciente agendado |
 | CRMV | INT | PK, FK -> Veterinario.CRMV, NOT NULL | Veterinário escalado |
 | Matricula | INT | FK -> Recepcao.Matricula, NOT NULL | Recepcionista que efetuou a reserva |
-| Status | VARCHAR(15) | NOT NULL, DEFAULT 'Agendado', CHECK IN ('Agendado','Em Espera','Em Atendimento','Concluído','Cancelado') |  |
+| Status_Agendamento | VARCHAR(15) | NOT NULL, DEFAULT 'Agendado', CHECK IN ('Agendado','Em Espera','Em Atendimento','Concluído','Cancelado') |  |
 
 ### Tabela: Atendimento
 | Campo | Tipo | Restrições | Descrição |
@@ -103,8 +103,8 @@ erDiagram
 | Data_Aplicacao | TIMESTAMP | PK |  |
 | Id_Veterinario | INT | PK, FK -> Veterinario.Id_Veterinario, NOT NULL | Profissional aplicador |
 | Id_Prontuario | INT | FK -> Prontuario.Id_Prontuario, NOT NULL | Prontuário vinculado |
-| Nome_vacina | VARCHAR(30) | NOT NULL |  |
-| Lote | VARCHAR(30) | NOT NULL |  |
+| Nome_Vacina | VARCHAR(30) | NOT NULL |  |
+| Lote_Vacina | VARCHAR(30) | NOT NULL |  |
 | Data_Proxima_Dose | DATE | NOT NULL, CHECK (data_proxima_dose > data_aplicacao) |  |
 
 ### Tabela: Internacao
