@@ -25,17 +25,17 @@ erDiagram
 | Campo | Tipo | Restrições | Descrição |
 |---|---|---|---|
 | Id_Usuario | INT | PK | Identificador do operador no sistema |
-| Nome | VARCHAR(120) | NOT NULL | Nome completo |
-| Email | VARCHAR(50) | NOT NULL, CHECK | Login coorporativo |
+| Nome_Usuario | VARCHAR(120) | NOT NULL | Nome completo |
+| Email_Usuario | VARCHAR(50) | NOT NULL, CHECK | Login coorporativo |
 | Senha | VARCHAR(50) | NOT NULL, CHECK |  |
 | Perfil | VARCHAR(11) | NOT NULL, CHECK (Perfil IN('Recepcao', 'Veterinario')) |  |
 
 ### Tabela: Veterinário
 | Campo | Tipo | Restrições | Descrição |
 |---|---|---|---|
-| CRMV | VARCHAR(7) | PK, CHECK |  |
+| CRMV | INTEGER(7) | PK |  |
 | CNPJ | VARCHAR(18) | NOT NULL, CHECK | PJ |
-| Especialidade | VARCHAR(80) | NOT NULL |  |
+| Especialidade | VARCHAR(50) | NOT NULL |  |
 | Id_Usuario | INT | FK -> Usuario.Id_Usuario, NOT NULL, UNIQUE |  |
 
 ### Tabela: Recepção
@@ -49,10 +49,10 @@ erDiagram
 | Campo | Tipo | Restrições | Descrição |
 |---|---|---|---|
 | Id_Tutor | INT | PK |  |
-| Nome | VARCHAR(120) | NOT NULL | Nome completo |
+| Nome_Tutor | VARCHAR(120) | NOT NULL | Nome completo |
 | CPF_Tutor | VARCHAR(14) | NOT NULL, UNIQUE, CHECK |  |
-| Email | VARCHAR(50) | CHECK |  | 
-| Telefone | VARCHAR(20) |  |  |
+| Email_Tutor | VARCHAR(50) | CHECK |  | 
+| Telefone | VARCHAR(15) |  |  |
 | Observações | TEXT |  |  |
 
 ### Tabela: Animal
