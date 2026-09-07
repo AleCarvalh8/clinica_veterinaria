@@ -105,7 +105,7 @@ erDiagram
 | Id_Prontuario | INT | FK -> Prontuario.Id_Prontuario, NOT NULL | Prontuário vinculado |
 | Nome_Vacina | VARCHAR(30) | NOT NULL |  |
 | Lote_Vacina | VARCHAR(30) | NOT NULL |  |
-| Data_Proxima_Dose | DATE | NOT NULL, CHECK (data_proxima_dose > data_aplicacao) |  |
+| Data_Proxima_Dose | DATE | CHECK (data_proxima_dose > data_aplicacao) |  |
 
 ### Tabela: Internacao
 | Campo | Tipo | Restrições | Descrição |
