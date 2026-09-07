@@ -33,7 +33,7 @@ erDiagram
 ### Tabela: Veterinário
 | Campo | Tipo | Restrições | Descrição |
 |---|---|---|---|
-| CRMV | INTEGER(7) | PK |  |
+| CRMV | INTEGER | PK |  |
 | CNPJ | VARCHAR(18) | NOT NULL, CHECK | PJ |
 | Especialidade | VARCHAR(50) | NOT NULL |  |
 | Id_Usuario | INT | FK -> Usuario.Id_Usuario, NOT NULL, UNIQUE |  |
@@ -53,7 +53,7 @@ erDiagram
 | CPF_Tutor | VARCHAR(14) | NOT NULL, UNIQUE, CHECK |  |
 | Email_Tutor | VARCHAR(50) | CHECK |  | 
 | Telefone | VARCHAR(15) |  |  |
-| Observações | TEXT |  |  |
+| Observações | VARCHAR(300) |  |  |
 
 ### Tabela: Animal
 | Campo | Tipo | Restrições | Descrição |
@@ -73,13 +73,13 @@ erDiagram
 | CRMV | INT | FK -> Veterinario.CRMV, NOT NULL |  |
 | Id_Tutor | INT | FK -> Tutor.Id_Tutor, NOT NULL |  |
 | Id_Animal | INT | FK -> Animal.Id_Animal, NOT NULL |  |
-| Data_abertura | TIMESTAMP | NOT NULL, DEFAULT NOW () | Registro de abertura da ficha clínica |
-| Peso_atual | NUMERIC(3,2) | NOT NULL, CHECK (peso_atual > 0) |  |
-| Queixa | TEXT | NOT NULL |  |
-| Anamnese | TEXT |  | Histórico e evolução dos sintomas |
-| Diagnostico | TEXT | NOT NULL |  |
-| Receita | TEXT |  |  |
-| Vacina | TEXT |  |  |
+| Data_abertura | TIMESTAMP | NOT NULL, DEFAULT SYSDATE | Registro de abertura da ficha clínica |
+| Peso_atual | NUMERIC(5,2) | NOT NULL, CHECK (peso_atual > 0) |  |
+| Queixa | VARCHAR(300) | NOT NULL |  |
+| Anamnese | CLOB |  | Histórico e evolução dos sintomas |
+| Diagnostico | VARCHAR(200) | NOT NULL |  |
+| Receita | VARCHAR(200) |  |  |
+| Vacina | VARCHAR(200) |  |  |
 
 ### Tabela: Agendamento
 | Campo | Tipo | Restrições | Descrição |
@@ -95,7 +95,7 @@ erDiagram
 |---|---|---|---|
 | Id_Atendimento | INT | PK |  |
 | Id_Prontuario | INT | FK -> Prontuario.Id_Prontuario, NOT NULL |  |
-| Hora_Atendimento | TIMESTAMP | NOT NULL, DEFAULT NOW () |  |
+| Hora_Atendimento | TIMESTAMP | NOT NULL, DEFAULT SYSDATE |  |
 
 ### Tabela: Vacinacao
 | Campo | Tipo | Restrições | Descrição |
@@ -113,11 +113,11 @@ erDiagram
 | Id_Internação | INT | PK |  |
 | Id_Animal | INT | FK -> Animal.Id_Animal, NOT NULL |  |
 | CRMV | INT | FK -> Veterinario.CRMV, NOT NULL | Médico responsável pelo caso |
-| Data_Internacao | TIMESTAMP | NOT NULL, DEFAULT NOW () |  |
+| Data_Internacao | TIMESTAMP | NOT NULL, DEFAULT SYSDATE |  |
 | Data_Alta | TIMESTAMP | CHECK (Data_Alta > Data_Internacao) |  |
 | Nivel_Gravidade | VARCHAR(10) | NOT NULL, CHECK (Nivel_Gravidade IN ('Baixa','Media','Alta','Critica')) |  |
 | Status_Internacao | VARCHAR(10) | NOT NULL, DEFAULT 'Internado', CHECK (Status_Internacao IN ('Internado','Alta','Obito')) |  |
-| Evolucao_Internacao | TEXT |  | Anotações |
+| Evolucao_Internacao | CLOB |  | Anotações |
 
 ### Tabela: Plantao
 | Campo | Tipo | Restrições | Descrição |
@@ -126,6 +126,6 @@ erDiagram
 | Id_Animal | INT | FK -> Animal.Id_Animal | Caso cadastrado |
 | Id_Tutor | INT | FK -> Tutor.Id_Tutor | Caso cadastrado |
 | CRMV | INT | FK -> Veterinario.CRMV, NOT NULL |  |
-| Chegada_Plantao | TIMESTAMP | NOT NULL, DEFAULT NOW () |  |
+| Chegada_Plantao | TIMESTAMP | NOT NULL, DEFAULT SYSDATE |  |
 | Status_Plantao | VARCHAR(10) | NOT NULL, DEFAULT 'Em análise', CHECK (Status_Plantao IN ('Em análise', 'Internado','Alta','Obito')) |  |
-| Evolucao_Plantao | TEXT |  | Anotações | 
+| Evolucao_Plantao | CLOB |  | Anotações | 
