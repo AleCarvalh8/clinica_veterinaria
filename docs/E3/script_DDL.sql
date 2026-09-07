@@ -1,5 +1,5 @@
 -- script_DDL.sql Pet & Gatô
--- (command banco vazio)
+-- Oracle SQL Developer
 
 CREATE TABLE tb_usuario(
 id_usuario      INTEGER,
