@@ -44,6 +44,8 @@ classDiagram
  class Veterinario {
     -CRMV: int
     -CNPJ: String
+    -Especialidade: String
+    -Id_Usuario: int
     +consultarHistoricoClinico()
     +registrarAtendimentoClinico()
     +atualizarProntuario
@@ -53,6 +55,7 @@ classDiagram
   class Recepcao {
     -Matricula: int
     -CPF_Recepcao: String
+    -Id_Usuario: int
     +cadastrarTutor()
     +cadastrarAnimal()
     +verificarConflitoAgenda()
@@ -71,7 +74,7 @@ classDiagram
   class Animal {
     -Id_Animal: int
     -Id_Tutor: int
-    -Nome: String
+    -Nome_Animal: String
     -Tipo_Animal: String
     -Raca: String
     -Sexo: char
@@ -88,7 +91,6 @@ classDiagram
   class Prontuario {
     -Id_Prontuario: int
     -CRMV: int
-    -Id_Tutor: int
     -Id_Animal: int
     -Data_abertura: DateTime
     -Peso_atual: Decimal
