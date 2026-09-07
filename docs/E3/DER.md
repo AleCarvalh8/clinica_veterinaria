@@ -62,15 +62,15 @@ erDiagram
 | Id_Tutor | INT | FK -> Tutor.Id_Tutor, NOT NULL |  |
 | Nome | VARCHAR(30) |  |  |
 | Tipo_animal | VARCHAR(15) | NOT NULL | Cão, gato, ave, etc | 
-| Raça | VARCHAR(35) | NOT NULL | Raça ou SRD (Sem raça definida) |
-| Sexo | CHAR(1) | CHECK (Sexo IN('M','F')) |  | 
+| Raca | VARCHAR(35) | NOT NULL | Raça ou SRD (Sem raça definida) |
+| Sexo | CHAR | CHECK (Sexo IN('M','F')) |  | 
 | Data_nascimento | DATE | | |  |  
 
 ### Tabela: Prontuário
 | Campo | Tipo | Restrições | Descrição |
 |---|---|---|---|
 | Id_Prontuario | INT | PK |  |
-| Id_Veterinario | INT | FK -> Veterinario.Id_Veterinario, NOT NULL, UNIQUE |  |
+| Id_Veterinario | INT | FK -> Veterinario.Id_Veterinario, NOT NULL |  |
 | Id_Tutor | INT | FK -> Tutor.Id_Tutor, NOT NULL |  |
 | Id_Animal | INT | FK -> Animal.Id_Aniaml, NOT NULL |  |
 | Data_abertura | TIMESTAMP | NOT NULL, DEFAULT NOW () | Registro de abertura da ficha clinica |
