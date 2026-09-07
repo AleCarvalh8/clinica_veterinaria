@@ -26,15 +26,15 @@ erDiagram
 |---|---|---|---|
 | Id_Usuario | INT | PK | Identificador do operador no sistema |
 | Nome | VARCHAR(120) | NOT NULL | Nome completo |
-| Email | VARCHAR(50) | NOT NULL | Login coorporativo |
-| Senha | VARCHAR(50) | NOT NULL |  |
-| Perfil | VARCHAR(11) | NOT NULL, CHECK IN | Recepção/Veterinário |
+| Email | VARCHAR(50) | NOT NULL, CHECK | Login coorporativo |
+| Senha | VARCHAR(50) | NOT NULL, CHECK |  |
+| Perfil | VARCHAR(11) | NOT NULL, CHECK (Perfil IN('Recepcao', 'Veterinario')) |  |
 
 ### Tabela: Veterinário
 | Campo | Tipo | Restrições | Descrição |
 |---|---|---|---|
-| CRMV | VARCHAR(7) | PK |  |
-| CNPJ | VARCHAR(18) | NOT NULL | PJ |
+| CRMV | VARCHAR(7) | PK, CHECK |  |
+| CNPJ | VARCHAR(18) | NOT NULL, CHECK | PJ |
 | Especialidade | VARCHAR(80) | NOT NULL |  |
 | Id_Usuario | INT | FK -> Usuario.Id_Usuario, NOT NULL, UNIQUE |  |
 
@@ -42,7 +42,7 @@ erDiagram
 | Campo | Tipo | Restrições | Descrição |
 |---|---|---|---|
 | Matrícula | INT | PK | Número de matrícula CLT na empresa |
-| CPF_Recepcao | VARCHAR(14) | NOT NULL |  |
+| CPF_Recepcao | VARCHAR(14) | NOT NULL, CHECK |  |
 | Id_Usuario | INT | FK -> Usuario.Id_Usuario, NOT NULL, UNIQUE |  |
 
 ### Tabela: Tutor
@@ -50,8 +50,8 @@ erDiagram
 |---|---|---|---|
 | Id_Tutor | INT | PK |  |
 | Nome | VARCHAR(120) | NOT NULL | Nome completo |
-| CPF_Tutor | VARCHAR(14) | NOT NULL, UNIQUE |  |
-| Email | VARCHAR(50) |  |  | 
+| CPF_Tutor | VARCHAR(14) | NOT NULL, UNIQUE, CHECK |  |
+| Email | VARCHAR(50) | CHECK |  | 
 | Telefone | VARCHAR(20) |  |  |
 | Observações | TEXT |  |  |
 
@@ -63,7 +63,7 @@ erDiagram
 | Nome | VARCHAR(30) |  |  |
 | Tipo_animal | VARCHAR(15) | NOT NULL | Cão, gato, ave, etc | 
 | Raça | VARCHAR(35) | NOT NULL | Raça ou SRD (Sem raça definida) |
-| Sexo | CHAR(1) | CHECK IN('M','F') |  | 
+| Sexo | CHAR(1) | CHECK (Sexo IN('M','F')) |  | 
 | Data_nascimento | DATE | | |  |  
 
 ### Tabela: Prontuário
@@ -88,7 +88,7 @@ erDiagram
 | Id_Animal | INT | PK, FK -> Animal.Id_Animal, NOT NULL | Paciente agendado |
 | CRMV | INT | PK, FK -> Veterinario.CRMV, NOT NULL | Veterinário escalado |
 | Matricula | INT | FK -> Recepcao.Matricula, NOT NULL | Recepcionista que efetuou a reserva |
-| Status_Agendamento | VARCHAR(15) | NOT NULL, DEFAULT 'Agendado', CHECK IN ('Agendado','Em Espera','Em Atendimento','Concluído','Cancelado') |  |
+| Status_Agendamento | VARCHAR(15) | NOT NULL, DEFAULT 'Agendado', CHECK (Status_Agendsmento IN ('Agendado','Em Espera','Em Atendimento','Concluído','Cancelado')) |  |
 
 ### Tabela: Atendimento
 | Campo | Tipo | Restrições | Descrição |
@@ -115,8 +115,8 @@ erDiagram
 | Id_Veterinario | INT | FK -> Veterinario.Id_Veterinario, NOT NULL | Médico responsável pelo caso |
 | Data_Internacao | TIMESTAMP | NOT NULL, DEFAULT NOW () |  |
 | Data_Alta | TIMESTAMP | CHECK (Data_Alta > Data_Internacao) |  |
-| Nivel_Gravidade | VARCHAR(10) | NOT NULL, CHECK IN ('Baixa','Media','Alta','Critica') |  |
-| Status_Internacao | VARCHAR(10) | NOT NULL, DEFAULT 'Internado', CHECK IN ('Internado','Alta','Obito') |  |
+| Nivel_Gravidade | VARCHAR(10) | NOT NULL, CHECK (Nivel_Gravidade IN ('Baixa','Media','Alta','Critica')) |  |
+| Status_Internacao | VARCHAR(10) | NOT NULL, DEFAULT 'Internado', CHECK (Status_Internacao IN ('Internado','Alta','Obito')) |  |
 | Evolucao_Internacao | TEXT |  | Anotações |
 
 ### Tabela: Plantao
@@ -127,5 +127,5 @@ erDiagram
 | Id_Tutor | INT | FK -> Tutor.Id_Tutor | Caso cadastrado |
 | Id_Veterinario | INT | FK -> Veterinario.Id_Veterinario, NOT NULL |  |
 | Chegada_Plantao | TIMESTAMP | NOT NULL, DEFAULT NOW () |  |
-| Status_Plantao | VARCHAR(10) | NOT NULL, DEFAULT 'Em análise', CHECK IN ('Em análise', 'Internado','Alta','Obito') |  |
+| Status_Plantao | VARCHAR(10) | NOT NULL, DEFAULT 'Em análise', CHECK (Status_Plantao IN ('Em análise', 'Internado','Alta','Obito')) |  |
 | Evolucao_Plantao | TEXT |  | Anotações | 
