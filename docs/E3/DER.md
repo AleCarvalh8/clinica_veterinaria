@@ -74,7 +74,7 @@ erDiagram
 | Id_Tutor | INT | FK -> Tutor.Id_Tutor, NOT NULL |  |
 | Id_Animal | INT | FK -> Animal.Id_Aniaml, NOT NULL |  |
 | Data_abertura | TIMESTAMP | NOT NULL, DEFAULT NOW () | Registro de abertura da ficha clinica |
-| Peso_atual | NUMERIC(5,2) | NOT NULL, CHECK (peso_atual > 0) |  |
+| Peso_atual | NUMERIC(3,2) | NOT NULL, CHECK (peso_atual > 0) |  |
 | Queixa | TEXT | NOT NULL |  |
 | Anamnese | TEXT |  | Histórico e evolução dos sintomas |
 | Diagnostico | TEXT | NOT NULL |  |
