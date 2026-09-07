@@ -78,7 +78,7 @@ erDiagram
 | Queixa | TEXT | NOT NULL |  |
 | Anamnese | TEXT |  | Histórico e evolução dos sintomas |
 | Diagnostico | TEXT | NOT NULL |  |
-| Receita | TEXT | NOT NULL |  |
+| Receita | TEXT |  |  |
 | Vacina | TEXT |  |  |
 
 ### Tabela: Agendamento
