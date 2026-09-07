@@ -31,60 +31,154 @@ flowchart LR
 
 ```mermaid
 classDiagram
-  class Usuário {
-    - id: int
-    - nome: String
-    - email: String
-    - senha: - String
-    - perfil: String
-    + login()
-    + logout()
+  class Usuario {
+    -Id_Usuario: int
+    -Nome_Usuario: String
+    -Email_Usuario: String
+    -Senha: String
+    -Perfil: String
+    +realizarLogin()
+    +validarSenha()
+    +atualizarDados()
   }
- class Veterinário {
-    +atributo: tipo
-    +metodo()
+ class Veterinario {
+    -CRMV: int
+    -CNPJ: String
+    +consultarHistoricoClinico()
+    +registrarAtendimentoClinico()
+    +atualizarProntuario
+    +registrarVacinacao
+    +acessarPlantao()
  }
-  class Recepcionista {
-    +atributo: tipo
-    +metodo()
+  class Recepcao {
+    -Matricula: int
+    -CPF_Recepcao: String
+    +cadastrarTutor()
+    +cadastrarAnimal()
+    +verificarConflitoAgenda()
+    +gerenciarAgendamentos()
   }
   class Tutor {
-    +atributo: tipo
-    +metodo()
+    -Id_Tutor: int
+    -Nome_Tutor: String
+    -CPF_Tutor: String
+    -Email_Tutor: String
+    -Telefone: String
+    -Observacoes: String
+    +cadastrar()
+    +atualizarDados()
   }
   class Animal {
-    +atributo: tipo
-    +metodo()
+    -Id_Animal: int
+    -Id_Tutor: int
+    -Nome: String
+    -Tipo_Animal: String
+    -Raca: String
+    -Sexo: char
+    -Data_nascimento: Date
+    +cadastrar()
+    +atualizarDados()
   }
   class Atendimento {
-    +atributo: tipo
-    +metodo()
+    -Id_Atendimento: int
+    -Id_Prontuario: int
+    -Hora_Atendimento: DateTime
+    +registrarAtendimento()
   }
-  class Prontuário {
-    +atributo: tipo
-    +metodo()
+  class Prontuario {
+    -Id_Prontuario: int
+    -CRMV: int
+    -Id_Tutor: int
+    -Id_Animal: int
+    -Data_abertura: DateTime
+    -Peso_atual: Decimal
+    -Queixa: String
+    -Anamnese: String
+    -Diagnostico: String
+    -Receita: String
+    -Vacina: String
+    +abrirProntuario()
+    +atualizarProntuario()
+    +consultarHistorico()
   }
   class Vacinacao {
-    +atributo: tipo
-    +metodo()
+    -Data_Aplicacao: DateTime
+    -CRMV: int
+    -Id_Prontuario: int
+    -Nome_Vacina: String
+    -Lote_Vacina: String
+    -Data_Proxima_Dose: Date
+    +registrarVacinacao()
+    +consultarVacinas()
+    +calcularProximaDose()
   }
   class Agendamento {
-    +atributo: tipo
-    +metodo()
+    -Hora_Agendamento: DateTime
+    -Id_Animal: int
+    -CRMV: int
+    -Matricula: int
+    -Status_Agendamento: String
+    +criarAtendimento()
+    +alterarAgendamento()
+    +cancelarAgendamento()
+    +verificarConflito()
+    +concluirAgendamento()
   }
-  class Lembrete {
-    +atributo: tipo
-    +metodo()
+  class Internacao {
+    -Id_Internacao: int
+    -Id_Animal: int
+    -CRMV: int
+    -Data_Internacao: DateTime
+    -Data_Alta: DateTime
+    -Nivel_Gravidade: String
+    -Status_Internacao: String
+    -Evolucao_Internacao: String
+    +registrarInternacao()
+    +registrarEvolucao()
+    +registrarAlta()
+    +registrarObito()
   }
 
+ class Plantao {
+    -Id_Plantao: int
+    -Id_Animal: int
+    -Id_Tutor: int
+    -CRMV: int
+    -Chegada_Plantao: DateTime
+    -Status_Plantao: String
+    -Evolucao_Plantao: String
+    +registrarChegada()
+    +registrarEvolucao()
+    +alterarStatus()
+    +encaminharInternacao()
+}
 
 
-  Usuário "1" -- "1" Veterinário : relação
-  Usuário "1" -- "1" Recepcionista : relação
-  Tutor "1" -- "n" Animal: relação
-  Veterinário "1" -- "1" Atendimento: relação
-  Veterinário "1" -- "n" Prontuário: relação
-  Recepcionista "1" -- "n" Agendamento: relação
+
+Usuario "1" -- "1" Veterinario : relação
+Usuario "1" -- "1" Recepcao : relação
+
+Tutor "1" -- "n" Animal : possui
+
+Veterinario "1" -- "n" Prontuario : responsável
+Tutor "1" -- "n" Prontuario : responsável
+Animal "1" -- "n" Prontuario : possui
+
+Prontuario "1" -- "n" Atendimento : possui
+
+Veterinario "1" -- "n" Vacinacao : aplica
+Prontuario "1" -- "n" Vacinacao : registra
+
+Animal "1" -- "n" Agendamento : possui
+Veterinario "1" -- "n" Agendamento : atende
+Recepcao "1" -- "n" Agendamento : realiza
+
+Animal "1" -- "n" Internacao : possui
+Veterinario "1" -- "n" Internacao : responsável
+
+Animal "0..1" -- "n" Plantao : relacionado
+Tutor "0..1" -- "n" Plantao : responsável
+Veterinario "1" -- "n" Plantao : responsável
 ```
 
 
