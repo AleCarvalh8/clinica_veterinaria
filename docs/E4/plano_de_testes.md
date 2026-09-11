@@ -8,7 +8,21 @@
 | Manual/aceitação | | | |
 
 ## 2. Critério de bloqueio de merge
-[Ex.: PR não é aceito se algum teste unitário existente quebrar]
+## 2. Critério de Bloqueio de Merge
+
+Para assegurar a estabilidade da versão principal do software (`main`), nenhum Pull Request (PR) terá sua mesclagem (merge) autorizada se infringir qualquer uma das seguintes diretrizes:
+
+1. **Quebra da Suíte de Testes Existente (Regressão):**
+   - Todos os testes automatizados já existentes (unitários, de integração e de ponta a ponta) devem passar com 100% de sucesso na esteira de integração contínua (CI).
+   
+2. **Ausência de Testes para Novas Regras de Negócio:**
+   - Toda implementação ou alteração que envolva regras de negócio (ex.: bloqueio de duplicidade de agendamento, cálculo de carência entre doses de vacina ou complexidade de senha) deve obrigatoriamente acompanhar seu respectivo teste automatizado.
+
+3. **Violação de Integridade ou Tratamento Inadequado do Banco de Dados:**
+   - O código não deve violar constraints relacionais definidas no Oracle (ex.: `CHECK`, `UNIQUE`, `NOT NULL` e chaves estrangeiras), devendo capturar e tratar erros de persistência de forma amigável para o usuário em vez de propagar falhas internas (como HTTP 500).
+
+4. **Revisão Obrigatória por Pares (Peer Review):**
+   - O Pull Request deve conter a aprovação formal de ao menos um outro integrante da equipe (Code Review), validando aderência aos padrões de código e aos critérios de aceite da respectiva User Story.
 
 ## 3. Casos de teste planejados (cresce a cada sprint)
 | ID | História (E2) | Cenário | Entrada | Resultado esperado | Prioridade |
