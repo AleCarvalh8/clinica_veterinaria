@@ -17,7 +17,7 @@ Sistema de gestão clínica veterinária voltado para a centralização de pront
 - Oracle VM VirtualBox
 
 ### Passo a passo
-1. Clone o repositório: `ainda não publicado`
+1. Clone o repositório: `https://github.com/Anabe-dev/clinica_veterinaria/tree/main`
 2. Instale as dependências:
    - Backend: `cd backend && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt` (no Windows: `.\venv\Scripts\activate`)
    - Frontend: `cd frontend && npm install`
