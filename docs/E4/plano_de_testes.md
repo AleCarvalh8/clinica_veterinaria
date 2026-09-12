@@ -3,9 +3,10 @@
 ## 1. Estratégia
 | Tipo de teste | O que cobre | Ferramenta | Quando roda |
 |---|---|---|---|
-| Unitário | | | |
-| Integração | | | |
-| Manual/aceitação | | | |
+| Unitário | Regras de negócio isoladas (validação de intervalo clínico de doses vacinais, bloqueio de sobreposição de horários na agenda, políticas de complexidade de senha) | Pytest | A cada PR (CI) |
+| Integração | Rotas da API REST (autenticação JWT, cadastro tutor/pet, agendamento, atualização de prontuário e aplicação de vacina) contra banco de dados de teste | Pytest + HTTPX (`TestClient` FastAPI) | A cada PR (CI), a partir da Sprint 2 |
+| Interface (E2E) | Validação de máscaras (CPF, telefone), comportamento de modais de erro de conflito e renderização de tabelas e dashboards | Vitest + React Testing Library | A cada PR (CI), a partir da Sprint 2 |
+| Manual / Aceitação | Fluxos completos de ponta a ponta (cadastrar pet → agendar consulta/vacina → realizar atendimento/aplicação → verificar prontuário) antes de cada Sprint Review | Roteiro manual de homologação | Ao fim de cada sprint |
 
 ## 2. Critério de Bloqueio de Merge
 
