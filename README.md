@@ -36,14 +36,14 @@ Sistema de gestão clínica veterinária voltado para a centralização de pront
 7. Acesse em `http://localhost:5173` (documentação da API em `http://localhost:8000/docs`)
 
 ## Estrutura do repositório
-/backend    — API REST (FastAPI), regras de negócio, autenticação e conexão com Oracle
-/database   — schema.sql, scripts DDL e seed com dados iniciais
-/docs       — Documento de visão, backlog, diagramas UML, DER e plano de testes
+/backend    — API REST (FastAPI), regras de negócio, autenticação e conexão com Oracle </br>
+/database   — schema.sql, scripts DDL e seed com dados iniciais</br>
+/docs       — Documento de visão, backlog, diagramas UML, DER e plano de testes</br>
 /frontend   — SPA em React (telas de recepção, agenda, prontuário e vacinas)
 
 ## Convenções da equipe
 - Branches: `feature/nome-da-feature`, `fix/nome-do-ajuste`, a partir de `main`
-- Commits: Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`)
+- Commits: Commits Convencional (`feat:`, `fix:`, `docs:`, `test:`)
 - Toda PR exige revisão de ao menos 1 integrante antes do merge.
 - Merge na `main` obrigatório ao menos uma vez por semana.
 
