@@ -7,7 +7,6 @@
 | Integração | | | |
 | Manual/aceitação | | | |
 
-## 2. Critério de bloqueio de merge
 ## 2. Critério de Bloqueio de Merge
 
 Para assegurar a estabilidade da versão principal do software (`main`), nenhum Pull Request (PR) terá sua mesclagem (merge) autorizada se infringir qualquer uma das seguintes diretrizes:
