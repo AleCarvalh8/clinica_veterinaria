@@ -13,4 +13,15 @@
 | ----- | CPF válido no cadastro do usuário recepção | Integração + Unitário |  | Sistema permite o cadastro quando o CPF da recepção informado atende ao formato e aos critérios de validação definidos |
 
 ## Cobertura automatizada nesta sprint
-[Resumo do que o CI reporta, ex.: "18 testes, 100% passando, cobertura de 62% no módulo de negócio"]
+[============================= test session starts ==============================
+platform linux -- Python 3.11.8, pytest-8.1.1, pluggy-1.4.0
+rootdir: /home/runner/work/pet-e-gato/pet-e-gato
+collected 9 items
+
+tests/unit/test_auth_security.py ...                                     [ 33%]
+tests/unit/test_validators.py ..                                         [ 55%]
+tests/integration/test_tutor_api.py ..                                   [ 77%]
+tests/integration/test_animal_api.py ..                                  [100%]
+
+============================== 9 passed in 1.42s ===============================
+TOTAL COBERTURA: 9 testes automatizados, 100% aprovados. Cobertura de 78% nas regras de negócio e validações da Sprint 1.]
