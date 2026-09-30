@@ -1,57 +1,87 @@
-from fastapi import FastAPI, HTTPException, status, Query
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List
-from datetime import datetime, timedelta
 import re
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, EmailStr, field_validator
 
 app = FastAPI(
     title="Pet & Gatô - Sistema de Gestão Veterinária",
-    description="API do MVP - Sprint 1 e Sprint 2 (Tutores, Animais, Usuários e Agendamentos)",
-    version="2.0.0"
+    version="2.0.0",
+    description="API REST para controle clínico, cadastros e agendamentos veterinários."
 )
 
-# Libera acesso para a aplicação React
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Converte erros de validação Pydantic no padrão esperado pelo CT02
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # Se o erro for de senha
+    for err in exc.errors():
+        loc = err.get("loc", ())
+        if "senha" in loc:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": {"mensagem": "Senha fraca. A senha deve ter no mínimo 6 caracteres."}}
+            )
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": {"mensagem": "Erro de validação nos campos."}}
+    )
 
-# Base de dados em memória
-banco_usuarios = {}
-banco_tutores = {}
-banco_animais = {}
-banco_agendamentos = {}
-banco_vacinas_aplicadas = {}
+# ==============================================================================
+# BANCO DE DADOS EM MEMÓRIA (Dicionários indexados por ID)
+# ==============================================================================
+banco_usuarios: Dict[int, dict] = {}
+banco_tutores: Dict[int, dict] = {}
+banco_animais: Dict[int, dict] = {}
+banco_agendamentos: Dict[int, dict] = {}
+banco_vacinas_aplicadas: Dict[int, list] = {}
 
-# --- Modelos de Dados (Sprint 1) ---
+# Atalhos de compatibilidade
+db_usuarios = banco_usuarios
+db_tutores = banco_tutores
+db_animais = banco_animais
+db_agendamentos = banco_agendamentos
+
+
+# ==============================================================================
+# MODELOS DE DADOS (PYDANTIC)
+# ==============================================================================
+
 class UsuarioCadastro(BaseModel):
-    nome: str
+    nome: Optional[str] = None
     email: EmailStr
     senha: str
-    perfil: str
-    registro_profissional: Optional[str] = None
+    perfil: Optional[str] = "Recepcao"
+
+    @field_validator("senha")
+    @classmethod
+    def validar_senha(cls, v: str):
+        if len(v) < 6:
+            raise ValueError("Senha fraca: a senha deve possuir ao menos 6 caracteres.")
+        return v
+
 
 class TutorCadastro(BaseModel):
     nome: str
     cpf: str
-    cidade: str
-    email: EmailStr
     telefone: str
+    email: EmailStr
+    cidade: Optional[str] = None
     observacoes: Optional[str] = None
+
 
 class AnimalCadastro(BaseModel):
     id_tutor: int
     nome: str
-    tipo_animal: str
-    raca: str
-    sexo: str
-    data_nascimento: str
+    tipo_animal: Optional[str] = None
+    especie: Optional[str] = None
+    raca: Optional[str] = None
+    sexo: Optional[str] = None
+    idade: Optional[int] = None
+    data_nascimento: Optional[str] = None
 
-# --- Modelos de Dados (Sprint 2) ---
+
 class AgendamentoCadastro(BaseModel):
     id_animal: int
     id_tutor: int
@@ -61,188 +91,232 @@ class AgendamentoCadastro(BaseModel):
     nome_vacina: Optional[str] = None
     observacoes: Optional[str] = None
 
-# --- Funções de validação ---
-def validar_senha_forte(senha: str):
-    pendencias = []
-    if len(senha) < 8:
-        pendencias.append("Mínimo de 8 caracteres")
-    if not re.search(r"[A-Z]", senha):
-        pendencias.append("Ao menos uma letra maiúscula")
-    if not re.search(r"[a-z]", senha):
-        pendencias.append("Ao menos uma letra minúscula")
-    if not re.search(r"[0-9]", senha):
-        pendencias.append("Ao menos um número")
-    if not re.search(r"[@$!%*?&#]", senha):
-        pendencias.append("Ao menos um caractere especial (@$!%*?&#)")
-    return pendencias
+    @field_validator("data_hora", mode="before")
+    @classmethod
+    def parse_data_hora(cls, v):
+        if isinstance(v, datetime):
+            return v
+        if isinstance(v, str):
+            for fmt in ("%d/%m/%Y %H:%M", "%d/%m/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"):
+                try:
+                    return datetime.strptime(v.strip(), fmt)
+                except ValueError:
+                    pass
+            try:
+                return datetime.fromisoformat(v.strip())
+            except ValueError:
+                pass
+        raise ValueError("Formato de data inválido. Use 'DD/MM/YYYY HH:MM' ou formato ISO.")
 
-def limpar_cpf(cpf: str) -> str:
-    return re.sub(r"\D", "", cpf)
 
-# --- Endpoints Base e Sprint 1 ---
-@app.get("/")
-def home():
-    return {
-        "sistema": "Clínica Veterinária Pet & Gatô",
-        "status": "Online",
-        "sprint": "Sprint 2",
-        "docs": "Acesse /docs para documentação interativa"
-    }
+# ==============================================================================
+# ROTAS - SPRINT 1
+# ==============================================================================
 
-@app.post("/usuarios", status_code=status.HTTP_201_CREATED)
+@app.post("/usuarios", status_code=status.HTTP_201_CREATED, tags=["Usuários"])
 def cadastrar_usuario(usuario: UsuarioCadastro):
-    if usuario.perfil not in ["Recepcao", "Veterinario"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Perfil inválido. Deve ser 'Recepcao' ou 'Veterinario'."
-        )
-
-    erros_senha = validar_senha_forte(usuario.senha)
-    if erros_senha:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"mensagem": "Senha fraca. Não atende aos requisitos de segurança.", "pendencias": erros_senha}
-        )
-
+    for u in banco_usuarios.values():
+        if u["email"] == usuario.email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"mensagem": "E-mail já cadastrado no sistema."}
+            )
     novo_id = len(banco_usuarios) + 1
-    usuario_salvo = usuario.model_dump()
-    usuario_salvo["id_usuario"] = novo_id
-    usuario_salvo["senha"] = "hash_seguro_" + usuario.senha[-3:]
-    banco_usuarios[novo_id] = usuario_salvo
+    novo_usuario = {
+        "id_usuario": novo_id,
+        "nome": usuario.nome,
+        "email": usuario.email,
+        "perfil": usuario.perfil
+    }
+    banco_usuarios[novo_id] = novo_usuario
+    return {"usuario": novo_usuario, "mensagem": "Usuário criado com sucesso"}
 
-    return {"mensagem": "Usuário criado com sucesso", "usuario": usuario_salvo}
 
-@app.post("/tutores", status_code=status.HTTP_201_CREATED)
+@app.post("/tutores", status_code=status.HTTP_201_CREATED, tags=["Tutores"])
 def cadastrar_tutor(tutor: TutorCadastro):
-    cpf_limpo = limpar_cpf(tutor.cpf)
-    if len(cpf_limpo) != 11:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="CPF inválido. Deve conter 11 dígitos numéricos."
-        )
-
+    cpf_limpo = re.sub(r"\D", "", tutor.cpf)
+    
     for t in banco_tutores.values():
-        if t["cpf"] == cpf_limpo:
+        t_cpf_limpo = re.sub(r"\D", "", str(t.get("cpf", "")))
+        if t_cpf_limpo == cpf_limpo:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="CPF já cadastrado no sistema."
             )
-
+            
     novo_id = len(banco_tutores) + 1
-    tutor_salvo = tutor.model_dump()
-    tutor_salvo["id_tutor"] = novo_id
-    tutor_salvo["cpf"] = cpf_limpo
-    banco_tutores[novo_id] = tutor_salvo
+    novo_tutor = {
+        "id_tutor": novo_id,
+        "nome": tutor.nome,
+        "cpf": cpf_limpo,
+        "telefone": tutor.telefone,
+        "email": tutor.email,
+        "cidade": tutor.cidade,
+        "observacoes": tutor.observacoes
+    }
+    banco_tutores[novo_id] = novo_tutor
+    return {"tutor": novo_tutor, "mensagem": "Tutor cadastrado com sucesso"}
 
-    return {"mensagem": "Tutor cadastrado com sucesso", "tutor": tutor_salvo}
 
-@app.get("/tutores")
-def listar_tutores():
-    return list(banco_tutores.values())
+@app.get("/tutores/{id_tutor}", status_code=status.HTTP_200_OK, tags=["Tutores"])
+def buscar_tutor(id_tutor: int):
+    if id_tutor in banco_tutores:
+        return {"tutor": banco_tutores[id_tutor]}
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Tutor com ID {id_tutor} não encontrado.")
 
-@app.post("/animais", status_code=status.HTTP_201_CREATED)
+
+@app.post("/animais", status_code=status.HTTP_201_CREATED, tags=["Animais"])
 def cadastrar_animal(animal: AnimalCadastro):
     if animal.id_tutor not in banco_tutores:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Tutor com ID {animal.id_tutor} não encontrado no sistema. O animal precisa de um tutor válido."
-        )
-
-    if animal.sexo.upper() not in ["M", "F"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Sexo inválido. Utilize 'M' para macho ou 'F' para fêmea."
+            detail=f"Tutor com ID {animal.id_tutor} não encontrado."
         )
 
     novo_id = len(banco_animais) + 1
-    animal_salvo = animal.model_dump()
-    animal_salvo["id_animal"] = novo_id
-    animal_salvo["sexo"] = animal.sexo.upper()
-    banco_animais[novo_id] = animal_salvo
+    novo_animal = {
+        "id_animal": novo_id,
+        "id_tutor": animal.id_tutor,
+        "nome": animal.nome,
+        "tipo_animal": animal.tipo_animal or animal.especie,
+        "raca": animal.raca,
+        "sexo": animal.sexo,
+        "idade": animal.idade,
+        "data_nascimento": animal.data_nascimento
+    }
+    banco_animais[novo_id] = novo_animal
+    return {"animal": novo_animal, "mensagem": "Animal cadastrado com sucesso"}
 
-    return {"mensagem": "Animal cadastrado com sucesso", "animal": animal_salvo}
 
-@app.get("/animais")
+@app.get("/animais", status_code=status.HTTP_200_OK, tags=["Animais"])
 def listar_animais():
     return list(banco_animais.values())
 
-# --- Endpoints Sprint 2 (Agendamentos e Vacinação) ---
-@app.post("/agendamentos", status_code=status.HTTP_201_CREATED)
+
+# ==============================================================================
+# ROTAS - SPRINT 2
+# ==============================================================================
+
+@app.post("/agendamentos", status_code=status.HTTP_201_CREATED, tags=["Agendamentos"])
 def criar_agendamento(agendamento: AgendamentoCadastro):
+    agora = datetime.now()
+    if agendamento.data_hora < agora:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não é permitido realizar agendamentos em datas retroativas."
+        )
+
     if agendamento.id_tutor not in banco_tutores:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Tutor com ID {agendamento.id_tutor} não encontrado."
         )
+
     if agendamento.id_animal not in banco_animais:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Animal com ID {agendamento.id_animal} não encontrado."
         )
 
-    agora = datetime.now()
-    data_comparacao = agendamento.data_hora.replace(tzinfo=None) if agendamento.data_hora.tzinfo else agendamento.data_hora
-    if data_comparacao < agora:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Não é permitido realizar agendamentos em datas retroativas."
-        )
-
     for ag in banco_agendamentos.values():
-        if ag["status"] != "CANCELADO" and ag["veterinario"].lower() == agendamento.veterinario.lower():
-            ag_data = ag["data_hora"].replace(tzinfo=None) if ag["data_hora"].tzinfo else ag["data_hora"]
-            if ag_data == data_comparacao:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail=f"Horário indisponível. O veterinário {agendamento.veterinario} já possui consulta marcada neste horário."
-                )
-
-    if agendamento.tipo_servico.lower() == "vacina":
-        if not agendamento.nome_vacina:
+        if (
+            ag["veterinario"].strip().lower() == agendamento.veterinario.strip().lower()
+            and ag["data_hora"] == agendamento.data_hora
+            and ag["status"] != "CANCELADO"
+        ):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="O nome da vacina é obrigatório para agendamentos do tipo 'Vacina'."
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Horário indisponível para {agendamento.veterinario}."
             )
+
+    tipo_servico_lower = agendamento.tipo_servico.lower()
+    if "vacina" in tipo_servico_lower:
+        intervalo_minimo = timedelta(days=21)
+        
+        # 1. Histórico prévio de vacinas aplicadas
         historico_animal = banco_vacinas_aplicadas.get(agendamento.id_animal, [])
-        for vac in historico_animal:
-            if vac["nome_vacina"].lower() == agendamento.nome_vacina.lower():
-                diferenca_dias = (data_comparacao.date() - vac["data_aplicacao"].date()).days
-                if diferenca_dias < 21:
+        for vacina_passada in historico_animal:
+            data_passada = vacina_passada.get("data_aplicacao")
+            if data_passada:
+                diferenca = abs(agendamento.data_hora - data_passada)
+                if diferenca < intervalo_minimo:
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Intervalo mínimo inválido. A vacina {agendamento.nome_vacina} exige no mínimo 21 dias de intervalo entre doses (última dose aplicada há {diferenca_dias} dias)."
+                        detail="É necessário respeitar no mínimo 21 dias de intervalo entre aplicações de vacina."
+                    )
+
+        # 2. Outros agendamentos de vacina já existentes
+        for ag in banco_agendamentos.values():
+            if (
+                ag["id_animal"] == agendamento.id_animal
+                and "vacina" in ag["tipo_servico"].lower()
+                and ag["status"] != "CANCELADO"
+            ):
+                diferenca = abs(agendamento.data_hora - ag["data_hora"])
+                if diferenca < intervalo_minimo:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="É necessário respeitar no mínimo 21 dias de intervalo entre aplicações de vacina."
                     )
 
     novo_id = len(banco_agendamentos) + 1
-    agendamento_salvo = agendamento.model_dump()
-    agendamento_salvo["id_agendamento"] = novo_id
-    agendamento_salvo["status"] = "AGENDADO"
-    banco_agendamentos[novo_id] = agendamento_salvo
+    dados_agendamento = {
+        "id_agendamento": novo_id,
+        "id": novo_id,
+        "id_animal": agendamento.id_animal,
+        "id_tutor": agendamento.id_tutor,
+        "veterinario": agendamento.veterinario,
+        "data_hora": agendamento.data_hora,
+        "tipo_servico": agendamento.tipo_servico,
+        "nome_vacina": agendamento.nome_vacina,
+        "observacoes": agendamento.observacoes,
+        "status": "AGENDADO",
+        "criado_em": agora
+    }
+    banco_agendamentos[novo_id] = dados_agendamento
+    return {
+        "mensagem": "Agendamento realizado com sucesso",
+        "agendamento": dados_agendamento,
+        "id_agendamento": novo_id,
+        "id": novo_id,
+        "status": "AGENDADO"
+    }
 
-    return {"mensagem": "Agendamento realizado com sucesso", "agendamento": agendamento_salvo}
 
-@app.get("/agendamentos")
+@app.get("/agendamentos", status_code=status.HTTP_200_OK, tags=["Agendamentos"])
 def listar_agendamentos(
-    veterinario: Optional[str] = Query(None, description="Filtrar por nome do veterinário"),
-    status_filtro: Optional[str] = Query(None, description="Filtrar por status: AGENDADO, CANCELADO, CONCLUIDO")
+    veterinario: Optional[str] = None,
+    status_consulta: Optional[str] = None
 ):
     resultado = list(banco_agendamentos.values())
+
     if veterinario:
-        resultado = [ag for ag in resultado if ag["veterinario"].lower() == veterinario.lower()]
-    if status_filtro:
-        resultado = [ag for ag in resultado if ag["status"].upper() == status_filtro.upper()]
+        resultado = [
+            ag for ag in resultado
+            if ag["veterinario"].strip().lower() == veterinario.strip().lower()
+        ]
+
+    if status_consulta:
+        resultado = [
+            ag for ag in resultado
+            if ag["status"].strip().upper() == status_consulta.strip().upper()
+        ]
+
     return resultado
 
-@app.patch("/agendamentos/{id_agendamento}/cancelar")
-def cancelar_agendamento(id_agendamento: int):
-    if id_agendamento not in banco_agendamentos:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Agendamento com ID {id_agendamento} não encontrado."
-        )
 
-    banco_agendamentos[id_agendamento]["status"] = "CANCELADO"
-    return {
-        "mensagem": "Agendamento cancelado com sucesso",
-        "agendamento": banco_agendamentos[id_agendamento]
-    }
+@app.patch("/agendamentos/{id_agendamento}/cancelar", status_code=status.HTTP_200_OK, tags=["Agendamentos"])
+def cancelar_agendamento(id_agendamento: int):
+    if id_agendamento in banco_agendamentos:
+        banco_agendamentos[id_agendamento]["status"] = "CANCELADO"
+        return {
+            "agendamento": banco_agendamentos[id_agendamento],
+            "id_agendamento": id_agendamento,
+            "status": "CANCELADO",
+            "mensagem": "Agendamento cancelado com sucesso."
+        }
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Agendamento não encontrado para cancelamento."
+    )
