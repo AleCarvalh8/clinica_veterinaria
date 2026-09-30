@@ -1,13 +1,14 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
+from datetime import datetime, timedelta
 import re
 
 app = FastAPI(
     title="Pet & Gatô - Sistema de Gestão Veterinária",
-    description="API do MVP - Sprint 1 (Tutores, Animais e Autenticação)",
-    version="1.0.0"
+    description="API do MVP - Sprint 1 e Sprint 2 (Tutores, Animais, Usuários e Agendamentos)",
+    version="2.0.0"
 )
 
 # Libera acesso para a aplicação React
@@ -19,12 +20,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Base de dados em memória para a Sprint 1
+# Base de dados em memória
 banco_usuarios = {}
 banco_tutores = {}
 banco_animais = {}
+banco_agendamentos = {}
+banco_vacinas_aplicadas = {}
 
-# Modelos de Dados
+# --- Modelos de Dados (Sprint 1) ---
 class UsuarioCadastro(BaseModel):
     nome: str
     email: EmailStr
@@ -48,7 +51,17 @@ class AnimalCadastro(BaseModel):
     sexo: str
     data_nascimento: str
 
-# Funções de validação
+# --- Modelos de Dados (Sprint 2) ---
+class AgendamentoCadastro(BaseModel):
+    id_animal: int
+    id_tutor: int
+    veterinario: str
+    data_hora: datetime
+    tipo_servico: str
+    nome_vacina: Optional[str] = None
+    observacoes: Optional[str] = None
+
+# --- Funções de validação ---
 def validar_senha_forte(senha: str):
     pendencias = []
     if len(senha) < 8:
@@ -66,13 +79,13 @@ def validar_senha_forte(senha: str):
 def limpar_cpf(cpf: str) -> str:
     return re.sub(r"\D", "", cpf)
 
-# Endpoints
+# --- Endpoints Base e Sprint 1 ---
 @app.get("/")
 def home():
     return {
         "sistema": "Clínica Veterinária Pet & Gatô",
         "status": "Online",
-        "sprint": "Sprint 1",
+        "sprint": "Sprint 2",
         "docs": "Acesse /docs para documentação interativa"
     }
 
@@ -152,3 +165,84 @@ def cadastrar_animal(animal: AnimalCadastro):
 @app.get("/animais")
 def listar_animais():
     return list(banco_animais.values())
+
+# --- Endpoints Sprint 2 (Agendamentos e Vacinação) ---
+@app.post("/agendamentos", status_code=status.HTTP_201_CREATED)
+def criar_agendamento(agendamento: AgendamentoCadastro):
+    if agendamento.id_tutor not in banco_tutores:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Tutor com ID {agendamento.id_tutor} não encontrado."
+        )
+    if agendamento.id_animal not in banco_animais:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Animal com ID {agendamento.id_animal} não encontrado."
+        )
+
+    agora = datetime.now()
+    data_comparacao = agendamento.data_hora.replace(tzinfo=None) if agendamento.data_hora.tzinfo else agendamento.data_hora
+    if data_comparacao < agora:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não é permitido realizar agendamentos em datas retroativas."
+        )
+
+    for ag in banco_agendamentos.values():
+        if ag["status"] != "CANCELADO" and ag["veterinario"].lower() == agendamento.veterinario.lower():
+            ag_data = ag["data_hora"].replace(tzinfo=None) if ag["data_hora"].tzinfo else ag["data_hora"]
+            if ag_data == data_comparacao:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"Horário indisponível. O veterinário {agendamento.veterinario} já possui consulta marcada neste horário."
+                )
+
+    if agendamento.tipo_servico.lower() == "vacina":
+        if not agendamento.nome_vacina:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="O nome da vacina é obrigatório para agendamentos do tipo 'Vacina'."
+            )
+        historico_animal = banco_vacinas_aplicadas.get(agendamento.id_animal, [])
+        for vac in historico_animal:
+            if vac["nome_vacina"].lower() == agendamento.nome_vacina.lower():
+                diferenca_dias = (data_comparacao.date() - vac["data_aplicacao"].date()).days
+                if diferenca_dias < 21:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Intervalo mínimo inválido. A vacina {agendamento.nome_vacina} exige no mínimo 21 dias de intervalo entre doses (última dose aplicada há {diferenca_dias} dias)."
+                    )
+
+    novo_id = len(banco_agendamentos) + 1
+    agendamento_salvo = agendamento.model_dump()
+    agendamento_salvo["id_agendamento"] = novo_id
+    agendamento_salvo["status"] = "AGENDADO"
+    banco_agendamentos[novo_id] = agendamento_salvo
+
+    return {"mensagem": "Agendamento realizado com sucesso", "agendamento": agendamento_salvo}
+
+@app.get("/agendamentos")
+def listar_agendamentos(
+    veterinario: Optional[str] = Query(None, description="Filtrar por nome do veterinário"),
+    status_filtro: Optional[str] = Query(None, description="Filtrar por status: AGENDADO, CANCELADO, CONCLUIDO")
+):
+    resultado = list(banco_agendamentos.values())
+    if veterinario:
+        resultado = [ag for ag in resultado if ag["veterinario"].lower() == veterinario.lower()]
+    if status_filtro:
+        resultado = [ag for ag in resultado if ag["status"].upper() == status_filtro.upper()]
+    return resultado
+
+@app.patch("/agendamentos/{id_agendamento}/cancelar")
+def cancelar_agendamento(id_agendamento: int):
+    if id_agendamento not in banco_agendamentos:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agendamento com ID {id_agendamento} não encontrado."
+        )
+
+    banco_agendamentos[id_agendamento]["status"] = "CANCELADO"
+    return {
+        "mensagem": "Agendamento cancelado com sucesso",
+        "agendamento": banco_agendamentos[id_agendamento]
+    }
