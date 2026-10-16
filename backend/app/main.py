@@ -36,6 +36,10 @@ banco_tutores: Dict[int, dict] = {}
 banco_animais: Dict[int, dict] = {}
 banco_agendamentos: Dict[int, dict] = {}
 banco_vacinas_aplicadas: Dict[int, list] = {}
+banco_prontuarios: Dict[int, list] = {}
+banco_vacinacoes: Dict[int, list] = {}
+banco_internacoes: Dict[int, dict] = {}
+banco_plantoes: Dict[int, list] = {}
 
 # Atalhos de compatibilidade
 db_usuarios = banco_usuarios
@@ -108,6 +112,35 @@ class AgendamentoCadastro(BaseModel):
                 pass
         raise ValueError("Formato de data inválido. Use 'DD/MM/YYYY HH:MM' ou formato ISO.")
 
+
+class ProntuarioCadastro(BaseModel):
+    crmv: int
+    id_animal: int
+    id_tutor: int
+    peso_atual: float
+    queixa: str
+    anamnese: Optional[str] = None
+    diagnostico: str
+    receita: Optional[str] = None
+    vacina: Optional[str] = None
+    data_vacinacao: Optional[datetime] = None
+    lote_vacina: Optional[str] = None
+    data_proxima_dose: Optional[str] = None
+
+
+class InternacaoCadastro(BaseModel):
+    id_animal: int
+    crmv: int
+    nivel_gravidade: str  # 'Baixa', 'Medio', 'Alta', 'Critica'
+    motivo: str
+    observacoes: Optional[str] = None
+
+
+class PlantaoCadastro(BaseModel):
+    id_animal: Optional[int] = None
+    id_tutor: Optional[int] = None
+    crmv: int
+    evolucao_plantao: Optional[str] = None
 
 # ==============================================================================
 # ROTAS - SPRINT 1
@@ -320,3 +353,179 @@ def cancelar_agendamento(id_agendamento: int):
         status_code=status.HTTP_404_NOT_FOUND,
         detail="Agendamento não encontrado para cancelamento."
     )
+
+
+# ==============================================================================
+# ROTAS - SPRINT 3
+# ==============================================================================
+
+@app.post("/prontuarios", status_code=status.HTTP_201_CREATED, tags=["Prontuários"])
+def criar_prontuario(prontuario: ProntuarioCadastro, request: Request):
+    """
+    História 4: Veterinário atualiza prontuário e data/dados de vacinação.
+    História 9: Restrito ao perfil de Veterinário (validado via header 'X-Perfil').
+    """
+    # Validação de perfil (História 9)
+    x_perfil = request.headers.get("x-perfil", "").strip().lower()
+    if x_perfil != "veterinario":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado. Apenas veterinários podem editar prontuários e registros clínicos."
+        )
+
+    if prontuario.id_animal not in banco_animais:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Animal não encontrado.")
+    
+    if prontuario.peso_atual <= 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="O peso atual deve ser maior que zero.")
+
+    novo_id = len(banco_prontuarios) + 1
+    registro = {
+        "id_prontuario": novo_id,
+        "crmv": prontuario.crmv,
+        "id_animal": prontuario.id_animal,
+        "id_tutor": prontuario.id_tutor,
+        "data_abertura": datetime.now(),
+        "peso_atual": prontuario.peso_atual,
+        "queixa": prontuario.queixa,
+        "anamnese": prontuario.anamnese,
+        "diagnostico": prontuario.diagnostico,
+        "receita": prontuario.receita,
+        "vacina": prontuario.vacina
+    }
+
+    if prontuario.id_animal not in banco_prontuarios:
+        banco_prontuarios[prontuario.id_animal] = []
+    banco_prontuarios[prontuario.id_animal].append(registro)
+
+    # Se houver dados de vacinação, registra na tabela correspondente (História 4)
+    if prontuario.vacina or prontuario.data_vacinacao:
+        dados_vacina = {
+            "data_aplicacao": prontuario.data_vacinacao or datetime.now(),
+            "crmv": prontuario.crmv,
+            "id_prontuario": novo_id,
+            "nome_vacina": prontuario.vacina or "Vacina Padrão",
+            "lote_vacina": prontuario.lote_vacina or "LOTE-000",
+            "data_proxima_dose": prontuario.data_proxima_dose
+        }
+        if prontuario.id_animal not in banco_vacinacoes:
+            banco_vacinacoes[prontuario.id_animal] = []
+        banco_vacinacoes[prontuario.id_animal].append(dados_vacina)
+
+    return {"mensagem": "Prontuário criado com sucesso", "prontuario": registro}
+
+
+@app.get("/animais/{id_animal}/prontuarios", status_code=status.HTTP_200_OK, tags=["Prontuários"])
+def listar_prontuarios_animal(id_animal: int):
+    """Consulta o histórico de prontuários e vacinações do animal."""
+    if id_animal not in banco_animais:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Animal não encontrado.")
+    return {
+        "id_animal": id_animal,
+        "prontuarios": banco_prontuarios.get(id_animal, []),
+        "vacinacoes": banco_vacinacoes.get(id_animal, [])
+    }
+
+
+@app.post("/plantao", status_code=status.HTTP_201_CREATED, tags=["Plantão"])
+def registrar_plantao(plantao: PlantaoCadastro, request: Request):
+    """
+    História 13: Anotações de plantão para registro de evolução do quadro.
+    Restrito ao perfil de Veterinário (História 9).
+    """
+    x_perfil = request.headers.get("x-perfil", "").strip().lower()
+    if x_perfil != "veterinario":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado. Apenas veterinários podem realizar anotações de plantão."
+        )
+
+    novo_id = len(banco_plantoes) + 1
+    dados = {
+        "id_plantao": novo_id,
+        "id_animal": plantao.id_animal,
+        "id_tutor": plantao.id_tutor,
+        "crmv": plantao.crmv,
+        "chegada_plantao": datetime.now(),
+        "status_plantao": "Em analise",
+        "evolucao_plantao": plantao.evolucao_plantao
+    }
+    
+    animal_chave = plantao.id_animal or 0
+    if animal_chave not in banco_plantoes:
+        banco_plantoes[animal_chave] = []
+    banco_plantoes[animal_chave].append(dados)
+
+    return {"mensagem": "Anotação de plantão registrada com sucesso", "plantao": dados}
+
+
+@app.get("/plantao/{id_animal}", status_code=status.HTTP_200_OK, tags=["Plantão"])
+def listar_plantoes_animal(id_animal: int):
+    """Lista as anotações e evoluções de plantão de um animal."""
+    return banco_plantoes.get(id_animal, [])
+
+
+@app.post("/internacoes", status_code=status.HTTP_201_CREATED, tags=["Internações"])
+def criar_internacao(internacao: InternacaoCadastro):
+    """
+    História 14: Lista de internações detalhando nível de gravidade, animal e tutor.
+    """
+    if internacao.id_animal not in banco_animais:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Animal não encontrado.")
+    
+    niveis_validos = ["Baixa", "Medio", "Alta", "Critica"]
+    if internacao.nivel_gravidade not in niveis_validos:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Nível de gravidade inválido. Use: {niveis_validos}")
+
+    animal = banco_animais[internacao.id_animal]
+    tutor = banco_tutores.get(animal["id_tutor"], {})
+
+    novo_id = len(banco_internacoes) + 1
+    dados = {
+        "id_internacao": novo_id,
+        "id_animal": internacao.id_animal,
+        "animal_nome": animal.get("nome"),
+        "id_tutor": animal.get("id_tutor"),
+        "tutor_nome": tutor.get("nome"),
+        "crmv": internacao.crmv,
+        "data_internacao": datetime.now(),
+        "nivel_gravidade": internacao.nivel_gravidade,
+        "status_internacao": "Internado",
+        "motivo": internacao.motivo,
+        "observacoes": internacao.observacoes
+    }
+    banco_internacoes[novo_id] = dados
+    return {"mensagem": "Internação registrada com sucesso", "internacao": dados}
+
+
+@app.get("/internacoes", status_code=status.HTTP_200_OK, tags=["Internações"])
+def listar_internacoes(status_internacao: Optional[str] = None):
+    """Lista todas as internações aplicando filtros opcionais por status."""
+    resultado = list(banco_internacoes.values())
+    if status_internacao:
+        resultado = [i for i in resultado if i["status_internacao"].lower() == status_internacao.lower()]
+    return resultado
+
+
+@app.get("/internacoes/{id_internacao}", status_code=status.HTTP_200_OK, tags=["Internações"])
+def buscar_detalhes_internacao(id_internacao: int):
+    """Retorna os detalhes completos de uma internação específica (História 14)."""
+    if id_internacao in banco_internacoes:
+        return {"internacao": banco_internacoes[id_internacao]}
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Internação não encontrada.")
+
+
+@app.get("/dashboard", status_code=status.HTTP_200_OK, tags=["Dashboard"])
+def obter_dashboard():
+    """
+    História 15: Tela inicial integrando resumos de clientes, agendamentos e internações ativas.
+    """
+    internacoes_ativas = [i for i in banco_internacoes.values() if i["status_internacao"] == "Internado"]
+    return {
+        "total_tutores": len(banco_tutores),
+        "total_animais": len(banco_animais),
+        "total_agendamentos": len(banco_agendamentos),
+        "total_internacoes_ativas": len(internacoes_ativas),
+        "agendamentos_recentes": list(banco_agendamentos.values()),
+        "internacoes": list(banco_internacoes.values())
+    }
