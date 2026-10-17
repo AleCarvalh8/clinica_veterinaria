@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet&Gato - Clínica Veterinária</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rationale&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="tela-login" class="tela-login">
+        <div class="login-box">
+            <div class="logo-container">
+                <img src="logo.png" alt="Logo Pet&Gato" class="logo">
+            </div>
+            <form id="loginForm">
+                <div class="input-group">
+                    <input type="text" id="login" placeholder="LOGIN:" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="senha" placeholder="SENHA:" required>
+                </div>
+                <a href="#" class="esqueci-senha">Esqueceu a senha?</a>
+                <button type="submit" class="btn-entrar">ENTRAR</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="tela-dashboard" class="dashboard-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="logo-container-dash">
+                <img src="logo.png" alt="Logo" class="logo-dash">
+            </div>
+            <nav class="menu">
+                <a href="#" class="menu-item ativo">Pagina inicial</a>
+                <a href="#" class="menu-item" id="btn-ir-cadastro">Cadastro</a>
+                <a href="#" class="menu-item">Agendamentos</a>
+                <a href="#" class="menu-item menu-bottom">Configurações</a>
+            </nav>
+            <div class="user-profile">
+                <img src="user.png" alt="user" class="avatar-img">
+                <span>Recepcionista</span>
+            </div>
+        </aside>
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Pagina inicial </h1>
+            </header>
+            <section class="cards-grid">
+                <div class="card"><span class="card-title">Tutores</span><span class="card-number">20</span></div>
+                <div class="card"><span class="card-title">Animais</span><span class="card-number">30</span></div>
+                <div class="card"><span class="card-title">Internações</span><span class="card-number">10</span></div>
+                <div class="card"><span class="card-title">Agendamentos</span><span class="card-number">40</span></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="tela-cadastro" class="dashboard-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="logo-container-dash">
+                <img src="logo.png" alt="Logo" class="logo-dash">
+            </div>
+            <nav class="menu">
+                <a href="#" class="menu-item" id="btn-voltar-inicio">Pagina inicial</a>
+                <a href="#" class="menu-item ativo">Cadastro</a>
+                <a href="#" class="menu-item">Agendamentos</a>
+                <a href="#" class="menu-item menu-bottom">Configurações</a>
+            </nav>
+            <div class="user-profile">
+                <img src="user.png" alt="user" class="avatar-img">
+                <span>Recepcionista</span>
+            </div>
+        </aside>
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Cadastro</h1>
+            </header>
+            <section class="forms-section">
+                <div class="form-card">
+                    <h2>Cadastro de tutor:</h2>
+                    <form class="cadastro-form">
+                        <div class="form-linha"><label>Nome:</label><input type="text" class="input-linha"></div>
+                        <div class="form-linha"><label>CPF:</label><input type="text" class="input-linha"></div>
+                        <div class="form-linha"><label>Email:</label><input type="email" class="input-linha"></div>
+                        <div class="form-linha"><label>Telefone:</label><input type="text" class="input-linha"></div>
+                        <button type="button" class="btn-check">✔</button>
+                    </form>
+                </div>
+                <div class="form-card">
+                    <h2>Cadastro de animal:</h2>
+                    <form class="cadastro-form">
+                        <div class="form-linha"><label>Nome:</label><input type="text" class="input-linha"></div>
+                        <div class="form-linha"><label>Tipo:</label><input type="text" class="input-linha"></div>
+                        <div class="form-linha"><label>Raça:</label><input type="text" class="input-linha"></div>
+                        <div class="form-linha dupla">
+                            <div class="form-coluna"><label>Sexo:</label><input type="text" class="input-linha curto"></div>
+                            <div class="form-coluna"><label>Data de Nascimento:</label><input type="text" placeholder="_/_/_" class="input-linha curto"></div>
+                        </div>
+                        <button type="button" class="btn-check">✔</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+    <div id="tela-agendamentos" class="dashboard-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="logo-container-dash"><img src="logo.png" alt="Logo" class="logo-dash"></div>
+            <nav class="menu">
+                <a href="#" class="menu-item">Pagina inicial</a>
+                <a href="#" class="menu-item">Cadastro</a>
+                <a href="#" class="menu-item ativo">Agendamentos</a>
+                <a href="#" class="menu-item menu-bottom">Configurações</a>
+            </nav>
+            <div class="user-profile"><img src="user.png" alt="user" class="avatar-img"><span>Recepcionista</span></div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Agendamentos</h1>
+            </header>
+
+            <section class="agendamentos-layout" style="position: relative;">
+                <div class="coluna-calendario">
+                    <div class="calendario-ui">
+                        <div class="cal-header"><span class="mes-atual">June 2022 <span class="seta-pequena">></span></span><span class="cal-controles"><span class="seta-vermelha">&lt;</span> <span class="seta-vermelha">&gt;</span></span></div>
+                        <div class="cal-dias-semana"><span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span></div>
+                        <div class="cal-dias-grid">
+                            <span></span><span></span><span></span><span>1</span><span>2</span><span>3</span><span>4</span>
+                            <span>5</span><span class="dia-ativo">6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span>
+                            <span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span>
+                            <span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span>
+                            <span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span></span>
+                        </div>
+                        <div class="cal-footer"><span>Time</span><strong>9:41 AM</strong></div>
+                    </div>
+                    
+                    <div class="caixa-legendas">
+                        <div class="legenda-vacinacao"><div class="circulo-vermelho"></div><span>Vacinações</span></div>
+                        <div class="legenda-vacinacao"><div class="circulo-cinza"></div><span>Consultas</span></div>
+                    </div>
+
+                    <button id="btn-abrir-agendamento" class="btn-novo-agendamento">+ Novo Agendamento</button>
+                </div>
+
+                <div class="grade-meses">
+                    
+                    <div class="mes-coluna" id="coluna-agosto">
+                        <div class="mes-titulo">Agosto</div>
+                        <div class="bloco branco"></div><div class="bloco cinza"></div><div class="bloco vermelho"></div><div class="bloco branco"></div>
+                    </div>
+                    <div class="mes-coluna" id="coluna-setembro">
+                        <div class="mes-titulo">Setembro</div>
+                        <div class="bloco cinza"></div><div class="bloco vermelho"></div><div class="bloco cinza"></div><div class="bloco vermelho"></div>
+                    </div>
+                    <div class="mes-coluna" id="coluna-outubro">
+                        <div class="mes-titulo">Outubro</div>
+                        <div class="bloco branco"></div><div class="bloco vermelho"></div><div class="bloco branco"></div><div class="bloco cinza"></div>
+                    </div>
+                    <div class="mes-coluna" id="coluna-novembro">
+                        <div class="mes-titulo">Novembro</div>
+                        <div class="bloco vermelho"></div><div class="bloco branco"></div><div class="bloco cinza"></div><div class="bloco branco"></div>
+                    </div>
+                </div>
+
+                <div id="modal-agendamento" class="bloco-notas-container modal-centralizado" style="display: none;">
+                    <h3>Novo Agendamento</h3>
+                    <div class="form-linha">
+                        <label>Animal:</label>
+                        <input type="text" id="input-agend-animal" class="input-linha" placeholder="Ex: Tico">
+                    </div>
+                    <div class="form-linha">
+                        <label>Mês:</label>
+                        <select id="select-agend-mes" class="input-linha" style="font-size: 24px; padding: 5px;">
+                            <option value="coluna-agosto">Agosto</option>
+                            <option value="coluna-setembro">Setembro</option>
+                            <option value="coluna-outubro">Outubro</option>
+                            <option value="coluna-novembro">Novembro</option>
+                        </select>
+                    </div>
+                    <div class="form-linha">
+                        <label>Tipo:</label>
+                        <select id="select-agend-tipo" class="input-linha" style="font-size: 24px; padding: 5px;">
+                            <option value="vermelho">Vacinação (Vermelho)</option>
+                            <option value="cinza">Consulta (Cinza)</option>
+                        </select>
+                    </div>
+                    <div class="bloco-notas-acoes">
+                        <button id="btn-cancelar-agend" class="btn-cancelar">Cancelar</button>
+                        <button id="btn-salvar-agend" class="btn-salvar">Agendar</button>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <div id="tela-configuracoes" class="dashboard-container" style="display: none;">
+        
+        <aside class="sidebar">
+            <div class="logo-container-dash">
+                <img src="logo.png" alt="Logo" class="logo-dash">
+            </div>
+            <nav class="menu">
+                <a href="#" class="menu-item">Pagina inicial</a>
+                <a href="#" class="menu-item">Cadastro</a>
+                <a href="#" class="menu-item">Agendamentos</a>
+                <a href="#" class="menu-item ativo menu-bottom">Configurações</a>
+            </nav>
+            <div class="user-profile">
+                <img src="user.png" alt="user" class="avatar-img">
+                <span>Recepcionista</span>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Configurações</h1>
+            </header>
+
+            <section class="config-section">
+                <div class="config-opcoes">
+                    <button class="btn-config">
+                                       Alterar a conta
+                    </button>
+                    
+                    <button class="btn-config btn-sair" id="btn-sair-conta">
+                                        Sair da conta
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="tela-dashboard-vet" class="dashboard-container" style="display: none;">
+        
+        <aside class="sidebar">
+            <div class="logo-container-dash">
+                <img src="logo.png" alt="Logo" class="logo-dash">
+            </div>
+            <nav class="menu">
+                <a href="#" class="menu-item ativo">Pagina inicial</a>
+                <a href="#" class="menu-item">Plantão</a>
+                <a href="#" class="menu-item">Agendamentos</a>
+                <a href="#" class="menu-item">Internações</a>
+                <a href="#" class="menu-item menu-bottom">Configurações</a>
+            </nav>
+            <div class="user-profile">
+                <img src="user.png" alt="user" class="avatar-img">
+                <span>Veterinário</span>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Pagina inicial</h1>
+            </header>
+            <section class="cards-grid">
+                <div class="card"><span class="card-title">Tutores</span><span class="card-number">20</span></div>
+                <div class="card"><span class="card-title">Animais</span><span class="card-number">30</span></div>
+                <div class="card"><span class="card-title">Internações</span><span class="card-number">10</span></div>
+                <div class="card"><span class="card-title">Agendamentos</span><span class="card-number">40</span></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="tela-agendamentos-vet" class="dashboard-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="logo-container-dash"><img src="logo.png" alt="Logo" class="logo-dash"></div>
+            <nav class="menu">
+                <a href="#" class="menu-item">Pagina inicial</a>
+                <a href="#" class="menu-item">Plantão</a>
+                <a href="#" class="menu-item ativo">Agendamentos</a>
+                <a href="#" class="menu-item">Internações</a>
+                <a href="#" class="menu-item menu-bottom">Configurações</a>
+            </nav>
+            <div class="user-profile"><img src="user.png" alt="user" class="avatar-img"><span>Veterinário</span></div>
+        </aside>
+        <main class="main-content">
+            <header class="top-header"><h1>Agendamentos</h1></header>
+            <section class="agendamentos-layout">
+                <div class="coluna-calendario">
+                    <div class="calendario-ui">
+                        <div class="cal-header"><span class="mes-atual">June 2022 <span class="seta-pequena">></span></span><span class="cal-controles"><span class="seta-vermelha">&lt;</span> <span class="seta-vermelha">&gt;</span></span></div>
+                        <div class="cal-dias-semana"><span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span></div>
+                        <div class="cal-dias-grid">
+                            <span></span><span></span><span></span><span>1</span><span>2</span><span>3</span><span>4</span>
+                            <span>5</span><span class="dia-ativo">6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span>
+                            <span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span>
+                            <span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span>
+                            <span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span></span>
+                        </div>
+                        <div class="cal-footer"><span>Time</span><strong>9:41 AM</strong></div>
+                    </div>
+                    <div class="caixa-legendas">
+                        <div class="legenda-vacinacao"><div class="circulo-vermelho"></div><span>Vacinações</span></div>
+                        <div class="legenda-vacinacao"><div class="circulo-cinza"></div><span>Consultas</span></div>
+                    </div>
+                </div>
+                <div class="grade-meses">
+                    <div class="mes-coluna"><div class="mes-titulo">Agosto</div><div class="bloco branco"></div><div class="bloco cinza"></div><div class="bloco vermelho"></div><div class="bloco branco"></div></div>
+                    <div class="mes-coluna"><div class="mes-titulo">Setembro</div><div class="bloco cinza"></div><div class="bloco vermelho"></div><div class="bloco cinza"></div><div class="bloco vermelho"></div></div>
+                    <div class="mes-coluna"><div class="mes-titulo">Outubro</div><div class="bloco branco"></div><div class="bloco vermelho"></div><div class="bloco branco"></div><div class="bloco cinza"></div></div>
+                    <div class="mes-coluna"><div class="mes-titulo">Novembro</div><div class="bloco vermelho"></div><div class="bloco branco"></div><div class="bloco cinza"></div><div class="bloco branco"></div></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="tela-configuracoes-vet" class="dashboard-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="logo-container-dash"><img src="logo.png" alt="Logo" class="logo-dash"></div>
+            <nav class="menu">
+                <a href="#" class="menu-item">Pagina inicial</a>
+                <a href="#" class="menu-item">Plantão</a>
+                <a href="#" class="menu-item">Agendamentos</a>
+                <a href="#" class="menu-item">Internações</a>
+                <a href="#" class="menu-item ativo menu-bottom">Configurações</a>
+            </nav>
+            <div class="user-profile"><img src="user.png" alt="user" class="avatar-img"><span>Veterinário</span></div>
+        </aside>
+        <main class="main-content">
+            <header class="top-header"><h1>Configurações</h1></header>
+            <section class="config-section">
+                <div class="config-opcoes">
+                    <button class="btn-config"> Alterar a conta</button>
+                    <button class="btn-config btn-sair" id="btn-sair-conta-vet">Sair da conta</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="tela-internacoes-vet" class="dashboard-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="logo-container-dash"><img src="logo.png" alt="Logo" class="logo-dash"></div>
+            <nav class="menu">
+                <a href="#" class="menu-item">Pagina inicial</a>
+                <a href="#" class="menu-item">Plantão</a>
+                <a href="#" class="menu-item">Agendamentos</a>
+                <a href="#" class="menu-item ativo">Internações</a>
+                <a href="#" class="menu-item menu-bottom">Configurações</a>
+            </nav>
+            <div class="user-profile"><img src="user.png" alt="user" class="avatar-img"><span>Veterinário</span></div>
+        </aside>
+        <main class="main-content">
+            <header class="top-header"><h1>Internações</h1></header>
+            
+            <section class="internacoes-section">
+                <div class="grid-internacoes">
+                    <div class="card-animal">
+                        <span>Animal 1</span>
+                        <div class="status-pilula verde">Baixa</div>
+                    </div>
+                    <div class="card-animal">
+                        <span>Animal 2</span>
+                        <div class="status-pilula verde">Baixa</div>
+                    </div>
+                    <div class="card-animal">
+                        <span>Animal 3</span>
+                        <div class="status-pilula amarela">Média</div>
+                    </div>
+                    <div class="card-animal">
+                        <span>Animal 4</span>
+                        <div class="status-pilula amarela">Média</div>
+                    </div>
+                    <div class="card-animal">
+                        <span>Animal 5</span>
+                        <div class="status-pilula vermelha">Alta</div>
+                    </div>
+                    <div class="card-animal">
+                        <span>Animal 6</span>
+                        <div class="status-pilula roxa">Crítica</div>
+                    </div>
+                </div>
+
+                <div class="btn-prontuarios-container">
+                    <button class="btn-prontuarios">
+                        Prontuários 
+                        <span class="icone-seta-dir">❯</span>
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="tela-prontuarios-vet" class="dashboard-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="logo-container-dash"><img src="logo.png" alt="Logo" class="logo-dash"></div>
+            <nav class="menu">
+                <a href="#" class="menu-item">Pagina inicial</a>
+                <a href="#" class="menu-item">Plantão</a>
+                <a href="#" class="menu-item">Agendamentos</a>
+                <a href="#" class="menu-item ativo">Internações</a>
+                <a href="#" class="menu-item menu-bottom">Configurações</a>
+            </nav>
+            <div class="user-profile"><img src="user.png" alt="user" class="avatar-img"><span>Veterinário</span></div>
+        </aside>
+        <main class="main-content">
+            <header class="top-header"><h1>Prontuários</h1></header>
+            
+            <section class="prontuarios-layout">
+                <div class="lista-animais-lateral">
+                    <h3>Pacientes</h3>
+                    <ul class="ul-animais">
+                        <li class="li-animal ativo">Animal 1</li>
+                        <li class="li-animal">Animal 2</li>
+                        <li class="li-animal">Animal 3</li>
+                        <li class="li-animal">Animal 4</li>
+                        <li class="li-animal">Animal 5</li>
+                        <li class="li-animal">Animal 6</li>
+                    </ul>
+                </div>
+
+                <div class="info-prontuario">
+                    <h3>Ficha Médica</h3>
+                    <div class="info-card-vazio">
+                        <p>Nenhuma informação clínica registada no momento.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="tela-plantao-vet" class="dashboard-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="logo-container-dash"><img src="logo.png" alt="Logo" class="logo-dash"></div>
+            <nav class="menu">
+                <a href="#" class="menu-item">Pagina inicial</a>
+                <a href="#" class="menu-item ativo">Plantão</a>
+                <a href="#" class="menu-item">Agendamentos</a>
+                <a href="#" class="menu-item">Internações</a>
+                <a href="#" class="menu-item menu-bottom">Configurações</a>
+            </nav>
+            <div class="user-profile"><img src="user.png" alt="user" class="avatar-img"><span>Veterinário</span></div>
+        </aside>
+        <main class="main-content">
+            <header class="top-header"><h1></h1></header>
+            
+            <section class="plantao-layout">
+                <div class="plantao-header-acoes">
+                    <h2>Registos de Plantão</h2>
+                    <button class="btn-adicionar-plantao">
+                        <span>+</span> Adicionar Novo Plantão
+                    </button>
+                </div>
+                
+                <div id="bloco-notas-plantao" class="bloco-notas-container" style="display: none;">
+                    <h3>Novo Registro de Plantão</h3>
+                    <div class="form-linha">
+                        <label>Data:</label>
+                        <input type="date" id="input-data-plantao" class="input-linha">
+                    </div>
+                    <div class="form-linha-texto">
+                        <label>Informações do plantão:</label>
+                        <textarea id="input-info-plantao" class="textarea-plantao" rows="4" placeholder="Digite as anotações do plantão aqui..."></textarea>
+                    </div>
+                    <div class="bloco-notas-acoes">
+                        <button id="btn-cancelar-plantao" class="btn-cancelar">Cancelar</button>
+                        <button id="btn-salvar-plantao" class="btn-salvar">Salvar Nota</button>
+                    </div>
+                </div>
+        
+                <div class="lista-plantoes">
+                    <div class="card-plantao vazio">
+                        <div class="data-plantao">--/--/----</div>
+                        <div class="notas-plantao">Nenhum plantão registado no momento. Clique em "Adicionar Novo Plantão" para começar.</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
