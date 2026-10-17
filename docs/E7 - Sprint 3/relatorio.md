@@ -1,7 +1,7 @@
 # Relatório de Entrega — Sprint 3 — Pet & Gatô
 
-**Período:** 01/10/2026 a 17/10/2026  
-**Sprint Review:** 17/10/2026, com o professor Lucas B. F.  
+**Período:** 02/10/2026 a 16/10/2026  
+**Sprint Review:** 16/10/2026 
 
 ---
 
