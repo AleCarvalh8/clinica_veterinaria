@@ -11,7 +11,7 @@
 | Gestão e consulta detalhada de internações com níveis de gravidade e identificação de tutor e animal (História 14) | 37a9441 | Concluído |
 | Criação da rota de Dashboard/Tela inicial integrando resumos de tutores, animais, agendamentos e internações (História 15) | 37a9441 | Concluído |
 | Testagem do código | #45 | Concluído |
-| Gravação e apresentação do programa rodando na sprint atual |  |  |
+| Arquivo para teste dentro da plataforma | 2f1c657 | Concluído |
 
 ## 2. Rituais que participei
 - [x] Dailies/weeklies
