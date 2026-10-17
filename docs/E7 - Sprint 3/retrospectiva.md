@@ -37,7 +37,7 @@
 
 | Ação | Responsável |
 | :--- | :--- |
-| **Conectar o frontend (HTML/JS) aos endpoints de Internações, Plantão e Dashboard** | Julia Roberta (Frontend / Integração) |
+| **Conectar o frontend (HTML/JS) aos endpoints de Internações, Plantão e Dashboard** | Ana Baldivia (Product Owner / Frontend) |
 | **Padronizar e automatizar a ativação do ambiente virtual e Git nos computadores da equipe** | Lídia Rocha (Scrum Master / DevOps) |
-| **Mapear a migração da base em memória para banco de dados relacional (SQLite / PostgreSQL)** | Ana Baldivia (Product Owner / Backend) |
+| **Mapear a migração da base em memória para banco de dados relacional (SQLite / PostgreSQL)** | Julia Roberta (Backend / Integração) |
 | **Ampliar cenários de teste E2E simulando o fluxo completo desde o agendamento até a alta da internação** | Alexandre Carvalho (Qualidade / Testes) |,,
