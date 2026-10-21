@@ -25,7 +25,8 @@
 ### 2.1. Execução Local dos Testes Automatizados (VS Code)
 Testes automatizados executados na máquina de desenvolvimento via Pytest, garantindo a regressão dos endpoints das Sprints 1 e 2 e a validação integral das novas regras de negócio da Sprint 3 (Internações, Evolução de Plantão e Dashboard):
 
-<!-- Inserir imagem do terminal local: python -m pytest -v -->
+<img width="1227" height="745" alt="image" src="https://github.com/user-attachments/assets/cbeb6553-c751-4e74-80b0-b2061198a80a" />
+
 
 **Resultado:** 100% dos testes executados e aprovados com sucesso no ambiente local (22 passed: 6 herdados da Sprint 1, 8 herdados da Sprint 2 e 8 novos da Sprint 3, cobrindo de `test_ct19` a `test_ct26`).
 
