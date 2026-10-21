@@ -1,6 +1,6 @@
 import re
 from datetime import datetime, timedelta
-from typing import Dict, List, Optiona
+from typing import Dict, List, Optional
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -390,10 +390,6 @@ def cancelar_agendamento(id_agendamento: int):
 
 @app.post("/prontuarios", status_code=status.HTTP_201_CREATED, tags=["Prontuários"])
 def criar_prontuario(prontuario: ProntuarioCadastro, request: Request):
-    """
-    História 4: Veterinário atualiza prontuário e dados de vacinação.
-    História 9: Restrito ao perfil de Veterinário (Header 'X-Perfil').
-    """
     x_perfil = request.headers.get("x-perfil", "").strip().lower()
     if x_perfil != "veterinario":
         raise HTTPException(
@@ -444,7 +440,6 @@ def criar_prontuario(prontuario: ProntuarioCadastro, request: Request):
 
 @app.get("/animais/{id_animal}/prontuarios", status_code=status.HTTP_200_OK, tags=["Prontuários"])
 def listar_prontuarios_animal(id_animal: int):
-    """Consulta o histórico de prontuários e vacinações do animal."""
     if id_animal not in banco_animais:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Animal não encontrado.")
     return {
@@ -454,17 +449,8 @@ def listar_prontuarios_animal(id_animal: int):
     }
 
 
-# ------------------------------------------------------------------------------
-# HISTÓRIA 13: Anotações de Evolução de Plantão (SHOULD)
-# Critério: "Somente uma atualização por plantão. Uma anotação para cada animal."
-# ------------------------------------------------------------------------------
-
 @app.post("/plantao", status_code=status.HTTP_201_CREATED, tags=["Plantão"])
 def registrar_plantao(plantao: PlantaoCadastro, request: Request):
-    """
-    História 13: Registra evolução clínica no plantão.
-    Validação de Negócio: Bloqueia mais de uma anotação por animal no mesmo plantão.
-    """
     x_perfil = request.headers.get("x-perfil", "").strip().lower()
     if x_perfil != "veterinario":
         raise HTTPException(
@@ -481,7 +467,6 @@ def registrar_plantao(plantao: PlantaoCadastro, request: Request):
     agora = datetime.now()
     plantao_atual = obter_identificador_plantao_atual(agora)
 
-    # Bloqueio de regra de negócio: 1 anotação por animal por plantão
     historico_animal = banco_plantoes.get(plantao.id_animal, [])
     for registro in historico_animal:
         if registro.get("turno_plantao") == plantao_atual:
@@ -518,21 +503,13 @@ def registrar_plantao(plantao: PlantaoCadastro, request: Request):
 
 @app.get("/plantao/{id_animal}", status_code=status.HTTP_200_OK, tags=["Plantão"])
 def listar_plantoes_animal(id_animal: int):
-    """Lista as evoluções de plantão registradas para um determinado animal."""
     if id_animal not in banco_animais:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Animal não encontrado.")
     return banco_plantoes.get(id_animal, [])
 
 
-# ------------------------------------------------------------------------------
-# HISTÓRIA 14: Gestão de Internações e Nível de Gravidade (SHOULD)
-# Critério: "Identificação do Animal e Tutor, status atualizado,
-# lista por nível de gravidade e detalhamento do caso."
-# ------------------------------------------------------------------------------
-
 @app.post("/internacoes", status_code=status.HTTP_201_CREATED, tags=["Internações"])
 def criar_internacao(internacao: InternacaoCadastro):
-    """Cria uma nova internação classificando gravidade e vinculando pet e tutor."""
     if internacao.id_animal not in banco_animais:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Animal não encontrado.")
 
@@ -544,7 +521,6 @@ def criar_internacao(internacao: InternacaoCadastro):
             detail=f"Nível de gravidade inválido. Valores aceitos: {niveis_validos}"
         )
 
-    # Impede internação duplicada se o pet já estiver internado
     for inter in banco_internacoes.values():
         if inter["id_animal"] == internacao.id_animal and inter["status_internacao"] == "Internado":
             raise HTTPException(
@@ -580,7 +556,6 @@ def listar_internacoes(
     nivel_gravidade: Optional[str] = None,
     status_internacao: Optional[str] = None
 ):
-    """Lista internações permitindo filtrar por nível de gravidade e/ou status."""
     resultado = list(banco_internacoes.values())
 
     if nivel_gravidade:
@@ -600,7 +575,6 @@ def listar_internacoes(
 
 @app.get("/internacoes/{id_internacao}", status_code=status.HTTP_200_OK, tags=["Internações"])
 def buscar_detalhes_internacao(id_internacao: int):
-    """Traz informações detalhadas do caso de internação, histórico de plantão, pet e tutor."""
     if id_internacao not in banco_internacoes:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Internação não encontrada.")
 
@@ -616,7 +590,6 @@ def buscar_detalhes_internacao(id_internacao: int):
 
 @app.patch("/internacoes/{id_internacao}/status", status_code=status.HTTP_200_OK, tags=["Internações"])
 def atualizar_status_internacao(id_internacao: int, dados: StatusInternacaoUpdate):
-    """Atualiza o status clínico da internação (ex: Alta Médica, Em Observação)."""
     if id_internacao not in banco_internacoes:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Internação não encontrada.")
 
@@ -630,14 +603,8 @@ def atualizar_status_internacao(id_internacao: int, dados: StatusInternacaoUpdat
     }
 
 
-# ------------------------------------------------------------------------------
-# HISTÓRIA 15: Resumo do Dashboard (SHOULD)
-# Critério: "Resumo dos clientes cadastrados, agendamentos e internações em tempo real."
-# ------------------------------------------------------------------------------
-
 @app.get("/dashboard", status_code=status.HTTP_200_OK, tags=["Dashboard"])
 def obter_dashboard():
-    """Retorna os indicadores consolidados para o Dashboard em tempo real."""
     internacoes_ativas = [
         i for i in banco_internacoes.values()
         if i["status_internacao"].lower() in ["internado", "em observação"]
