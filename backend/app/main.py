@@ -1,4 +1,3 @@
-# Refatoração e validações clínicas finais - Sprint 3 (Pet & Gatô)
 import re
 from datetime import datetime, timedelta
 from typing import Dict, List, Optiona
