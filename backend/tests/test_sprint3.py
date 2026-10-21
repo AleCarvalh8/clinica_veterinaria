@@ -4,213 +4,171 @@ from datetime import datetime, timedelta
 import pytest
 from fastapi.testclient import TestClient
 
-sys.path.insert(0, str(Path(_file_).resolve().parent.parent))
+# Garante que a pasta backend está acessível nos módulos do Python
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.main import app, banco_tutores, banco_animais, banco_agendamentos, banco_vacinas_aplicadas
+from app.main import (
+    app,
+    banco_usuarios,
+    banco_tutores,
+    banco_animais,
+    banco_agendamentos,
+    banco_internacoes,
+    banco_plantoes,
+)
 
 client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def setup_dados_teste():
     """Configura um estado limpo e controlado antes de cada teste."""
+    banco_usuarios.clear()
     banco_tutores.clear()
     banco_animais.clear()
     banco_agendamentos.clear()
-    banco_vacinas_aplicadas.clear()
+    banco_internacoes.clear()
+    banco_plantoes.clear()
 
-    # Criação de um Tutor base (ID: 1)
+    # Criação de um Tutor e Animal base
     banco_tutores[1] = {
         "id_tutor": 1,
-        "nome": "Carlos Eduardo",
-        "cpf": "12345678901",
+        "nome": "Carlos Silva",
+        "cpf": "11122233344",
+        "telefone": "16999990000",
+        "email": "carlos@email.com",
         "cidade": "Ribeirão Preto",
-        "email": "carlos@teste.com",
-        "telefone": "16999998888",
-        "observacoes": None
     }
-
-    # Criação de um Animal base (ID: 1)
     banco_animais[1] = {
         "id_animal": 1,
         "id_tutor": 1,
         "nome": "Rex",
-        "tipo_animal": "Cachorro",
+        "tipo_animal": "Cão",
         "raca": "Labrador",
         "sexo": "M",
-        "data_nascimento": "2022-05-10"
+        "idade": 3,
     }
 
 
-# CT11: Agendamento de consulta com dados válidos e horário livre
-def test_ct11_agendamento_sucesso():
-    data_futura = (datetime.now() + timedelta(days=2)).replace(microsecond=0).isoformat()
+# ==============================================================================
+# TESTES SPRINT 3 (HISTÓRIAS SHOULD: 13, 14 E 15)
+# ==============================================================================
+
+# CT19: Entrada de Internação com Sucesso
+def test_ct19_internacao_sucesso():
     payload = {
         "id_animal": 1,
-        "id_tutor": 1,
-        "veterinario": "Dra. Paula",
-        "data_hora": data_futura,
-        "tipo_servico": "Consulta",
-        "observacoes": "Check-up de rotina"
+        "crmv": 12345,
+        "nivel_gravidade": "Alta",
+        "motivo": "Intoxicação alimentar severa",
+        "observacoes": "Pet em soroterapia",
     }
-
-    response = client.post("/agendamentos", json=payload)
+    response = client.post("/internacoes", json=payload)
     assert response.status_code == 201
     dados = response.json()
-    assert dados["mensagem"] == "Agendamento realizado com sucesso"
-    assert dados["agendamento"]["id_agendamento"] == 1
-    assert dados["agendamento"]["status"] == "AGENDADO"
+    assert dados["internacao"]["animal_nome"] == "Rex"
+    assert dados["internacao"]["nivel_gravidade"] == "Alta"
+    assert dados["internacao"]["status_internacao"] == "Internado"
 
 
-# CT12: Tentativa de agendamento em horário já ocupado para o mesmo veterinário (Conflito)
-def test_ct12_conflito_horario_mesmo_veterinario():
-    data_futura = (datetime.now() + timedelta(days=3)).replace(microsecond=0).isoformat()
-    payload1 = {
-        "id_animal": 1,
-        "id_tutor": 1,
-        "veterinario": "Dr. Marcos",
-        "data_hora": data_futura,
-        "tipo_servico": "Consulta"
-    }
-    # Primeiro agendamento: Sucesso
-    resp1 = client.post("/agendamentos", json=payload1)
-    assert resp1.status_code == 201
-
-    # Segundo agendamento no mesmo horário com o mesmo profissional: Conflito 409
-    payload2 = {
-        "id_animal": 1,
-        "id_tutor": 1,
-        "veterinario": "Dr. Marcos",
-        "data_hora": data_futura,
-        "tipo_servico": "Retorno"
-    }
-    resp2 = client.post("/agendamentos", json=payload2)
-    assert resp2.status_code == 409
-    assert "Horário indisponível" in resp2.json()["detail"]
-
-
-# CT13: Agendamento vinculado a animal ou tutor inexistente
-def test_ct13_agendamento_entidade_inexistente():
-    data_futura = (datetime.now() + timedelta(days=1)).isoformat()
-    # Tutor 999 inexistente
-    payload_tutor_invalido = {
-        "id_animal": 1,
-        "id_tutor": 999,
-        "veterinario": "Dra. Paula",
-        "data_hora": data_futura,
-        "tipo_servico": "Consulta"
-    }
-    resp_tutor = client.post("/agendamentos", json=payload_tutor_invalido)
-    assert resp_tutor.status_code == 404
-    assert "Tutor com ID 999 não encontrado" in resp_tutor.json()["detail"]
-
-    # Animal 999 inexistente
-    payload_animal_invalido = {
-        "id_animal": 999,
-        "id_tutor": 1,
-        "veterinario": "Dra. Paula",
-        "data_hora": data_futura,
-        "tipo_servico": "Consulta"
-    }
-    resp_animal = client.post("/agendamentos", json=payload_animal_invalido)
-    assert resp_animal.status_code == 404
-    assert "Animal com ID 999 não encontrado" in resp_animal.json()["detail"]
-
-
-# CT14: Agendamento em data/hora retroativa (Passado)
-def test_ct14_agendamento_data_retroativa():
-    data_passada = (datetime.now() - timedelta(days=1)).isoformat()
+# CT20: Validação de Nível de Gravidade Inválido
+def test_ct20_internacao_gravidade_invalida():
     payload = {
         "id_animal": 1,
-        "id_tutor": 1,
-        "veterinario": "Dra. Paula",
-        "data_hora": data_passada,
-        "tipo_servico": "Consulta"
+        "crmv": 12345,
+        "nivel_gravidade": "Extrema",  # Inválido
+        "motivo": "Emergência",
     }
-    response = client.post("/agendamentos", json=payload)
+    response = client.post("/internacoes", json=payload)
     assert response.status_code == 400
-    assert "datas retroativas" in response.json()["detail"]
+    assert "Nível de gravidade inválido" in response.json()["detail"]
 
 
-# CT15: Cancelamento de agendamento existente
-def test_ct15_cancelamento_sucesso():
-    data_futura = (datetime.now() + timedelta(days=5)).isoformat()
+# CT21: Bloqueio de Animal Já Internado
+def test_ct21_internacao_duplicada():
     payload = {
         "id_animal": 1,
-        "id_tutor": 1,
-        "veterinario": "Dr. Roberto",
-        "data_hora": data_futura,
-        "tipo_servico": "Consulta"
+        "crmv": 12345,
+        "nivel_gravidade": "Medio",
+        "motivo": "Cirurgia eletiva",
     }
-    resp_criacao = client.post("/agendamentos", json=payload)
-    id_agendamento = resp_criacao.json()["agendamento"]["id_agendamento"]
+    res1 = client.post("/internacoes", json=payload)
+    assert res1.status_code == 201
 
-    # Cancela o agendamento
-    resp_cancela = client.patch(f"/agendamentos/{id_agendamento}/cancelar")
-    assert resp_cancela.status_code == 200
-    assert resp_cancela.json()["agendamento"]["status"] == "CANCELADO"
-
-
-# CT16: Tentativa de cancelamento de agendamento inexistente
-def test_ct16_cancelamento_inexistente():
-    response = client.patch("/agendamentos/9999/cancelar")
-    assert response.status_code == 404
-    assert "não encontrado" in response.json()["detail"]
+    res2 = client.post("/internacoes", json=payload)
+    assert res2.status_code == 409
+    assert "já consta como atualmente internado" in res2.json()["detail"]
 
 
-# CT17: Listagem de agendamentos com filtro por veterinário e status
-def test_ct17_listagem_filtros():
-    data_futura1 = (datetime.now() + timedelta(days=1)).isoformat()
-    data_futura2 = (datetime.now() + timedelta(days=2)).isoformat()
+# CT22: Listagem e Filtro por Gravidade
+def test_ct22_listagem_filtros_internacao():
+    client.post(
+        "/internacoes",
+        json={"id_animal": 1, "crmv": 12345, "nivel_gravidade": "Critica", "motivo": "Trauma"},
+    )
+    res_critica = client.get("/internacoes?nivel_gravidade=Critica")
+    assert res_critica.status_code == 200
+    assert len(res_critica.json()) == 1
 
-    client.post("/agendamentos", json={
-        "id_animal": 1, "id_tutor": 1, "veterinario": "Dra. Camila",
-        "data_hora": data_futura1, "tipo_servico": "Consulta"
-    })
-    client.post("/agendamentos", json={
-        "id_animal": 1, "id_tutor": 1, "veterinario": "Dr. Fernando",
-        "data_hora": data_futura2, "tipo_servico": "Consulta"
-    })
-
-    # Filtrar por veterinário Camila
-    resp = client.get("/agendamentos?veterinario=Dra. Camila")
-    assert resp.status_code == 200
-    dados = resp.json()
-    assert len(dados) == 1
-    assert dados[0]["veterinario"] == "Dra. Camila"
+    res_baixa = client.get("/internacoes?nivel_gravidade=Baixa")
+    assert res_baixa.status_code == 200
+    assert len(res_baixa.json()) == 0
 
 
-# CT18: Validação de intervalo mínimo entre doses da mesma vacina (regra de 21 dias)
-def test_ct18_validacao_intervalo_vacina():
-    # Simula que o animal 1 tomou a vacina V8 há 10 dias
-    data_aplicacao_anterior = datetime.now() - timedelta(days=10)
-    banco_vacinas_aplicadas[1] = [
-        {"nome_vacina": "V8 Canina", "data_aplicacao": data_aplicacao_anterior}
-    ]
+# CT23: Detalhes do Caso Clínico
+def test_ct23_detalhes_caso_internacao():
+    res_post = client.post(
+        "/internacoes",
+        json={"id_animal": 1, "crmv": 12345, "nivel_gravidade": "Baixa", "motivo": "Observação pós-vacina"},
+    )
+    id_internacao = res_post.json()["internacao"]["id_internacao"]
 
-    # Tentativa de agendar a próxima dose para amanhã (apenas 11 dias de intervalo) -> Deve falhar
-    data_proxima_dose = (datetime.now() + timedelta(days=1)).isoformat()
-    payload_invalido = {
+    res_get = client.get(f"/internacoes/{id_internacao}")
+    assert res_get.status_code == 200
+    detalhes = res_get.json()
+    assert detalhes["internacao"]["id_internacao"] == id_internacao
+    assert detalhes["detalhes_animal"]["nome"] == "Rex"
+
+
+# CT24: Evolução de Plantão com Perfil Veterinário
+def test_ct24_plantao_sucesso():
+    payload = {
         "id_animal": 1,
-        "id_tutor": 1,
-        "veterinario": "Dra. Paula",
-        "data_hora": data_proxima_dose,
-        "tipo_servico": "Vacina",
-        "nome_vacina": "V8 Canina"
+        "crmv": 12345,
+        "evolucao_plantao": "Paciente estável e responsivo.",
     }
-    resp_invalida = client.post("/agendamentos", json=payload_invalido)
-    assert resp_invalida.status_code == 400
-    assert "no mínimo 21 dias de intervalo" in resp_invalida.json()["detail"]
+    headers = {"X-Perfil": "veterinario"}
+    response = client.post("/plantao", json=payload, headers=headers)
+    assert response.status_code == 201
+    assert "plantao" in response.json()
+    assert "turno_plantao" in response.json()["plantao"]
 
-    # Tentativa de agendar a próxima dose para daqui a 15 dias (totalizando 25 dias de intervalo) -> Deve permitir
-    data_permitida = (datetime.now() + timedelta(days=15)).isoformat()
-    payload_valido = {
+
+# CT25: Bloqueio de Mais de Uma Anotação por Animal no Mesmo Plantão
+def test_ct25_bloqueio_plantao_duplicado():
+    payload = {
         "id_animal": 1,
-        "id_tutor": 1,
-        "veterinario": "Dra. Paula",
-        "data_hora": data_permitida,
-        "tipo_servico": "Vacina",
-        "nome_vacina": "V8 Canina"
+        "crmv": 12345,
+        "evolucao_plantao": "Primeira checagem.",
     }
-    resp_valida = client.post("/agendamentos", json=payload_valido)
-    assert resp_valida.status_code == 201
-    assert resp_valida.json()["agendamento"]["status"] == "AGENDADO"
+    headers = {"X-Perfil": "veterinario"}
+    res1 = client.post("/plantao", json=payload, headers=headers)
+    assert res1.status_code == 201
+
+    res2 = client.post("/plantao", json=payload, headers=headers)
+    assert res2.status_code == 409
+    assert "já possui evolução registrada neste plantão" in res2.json()["detail"]
+
+
+# CT26: Resumo do Dashboard com Métricas em Tempo Real
+def test_ct26_dashboard_tempo_real():
+    client.post(
+        "/internacoes",
+        json={"id_animal": 1, "crmv": 12345, "nivel_gravidade": "Alta", "motivo": "Tratamento intensivo"},
+    )
+    response = client.get("/dashboard")
+    assert response.status_code == 200
+    dash = response.json()
+    assert dash["total_tutores"] == 1
+    assert dash["total_animais"] == 1
+    assert dash["total_internacoes_ativas"] == 1
+    assert dash["resumo_gravidade_internacoes"]["Alta"] == 1
